@@ -24,12 +24,6 @@ package "Manufacturer Aggregate" {
   }
 }
 
-package "Airport Type Aggregate" {
-  class AirportType <<aggregate root>> <<entity>> {
-    designation : String
-  }
-}
-
 ' ==========================================
 ' WP #1A & #1B - ENHANCED AIRCRAFT MANAGEMENT
 ' ==========================================
@@ -52,14 +46,17 @@ package "Aircraft Aggregate" {
   }
 
   class Aircraft <<aggregate root>> <<entity>> {
-    registrationNumber : String
     manufacturingDate : Date
     seatingCapacity : int
     totalFlightHours : double
-    /totalOperationalHours : double
     currentStatus : AircraftStatus
   }
 
+  class RegistrationNumber <<value object>> {
+    registrationNumber : String
+  }
+
+    Aircraft "1" *-- "1" RegistrationNumber : has >
   Aircraft "1" *-- "1" AircraftStatus : uses >
 }
 
@@ -74,15 +71,19 @@ package "Airport Aggregate" {
   }
 
   class Airport <<aggregate root>> <<entity>> {
-    iataCode : String
     name : String
     city : String
     country : String
+    region : String
     timezone : String
     operationalHours : String
     contactInformation : String
     photos : List<String>
     operationalStatus : AirportStatus
+  }
+
+  class IATAcode <<value object>> {
+    code : String
   }
 
   class Coordinates <<value object>> {
@@ -103,6 +104,7 @@ package "Airport Aggregate" {
   }
 
   Airport "1" *-- "1" Coordinates : located at >
+  Airport "1" *-- "1" IATAcode : has >
   Airport "1" *-- "1..*" RunwayInfo : has >
   Airport "1" *-- "1" AirportStatus : uses >
   Airport "1" *-- "1" FacilityInfo : provides >
@@ -113,17 +115,19 @@ package "Airport Aggregate" {
 ' ==========================================
 package "Route Aggregate" {
   class Route <<aggregate root>> <<entity>> {
-    routeId : String
     estimatedFlightTime : int
     isActive : boolean
+  }
+  class RouteID <<value object>> {
+    routeId : String
   }
 
   class RouteRequirements <<value object>> {
     minimumRange : int
     minimumCapacity : int
   }
-
   Route "1" *-- "1" RouteRequirements : demands >
+    Route "1" *-- "1" RouteID : has >
 }
 
 ' ==========================================
@@ -140,12 +144,16 @@ package "Scheduled Flight Aggregate" {
   }
 
   class ScheduledFlight <<aggregate root>> <<entity>> {
-    flightNumber : String
     scheduledDate : Date
     scheduledTime : String
     currentStatus : FlightStatus
   }
 
+  class FlightNumber <<value object>> {
+   flightNumber : String
+  }
+
+  ScheduledFlight "1" *-- "1" FlightNumber : has >
   ScheduledFlight "1" *-- "1" FlightStatus : uses >
 }
 
@@ -186,20 +194,29 @@ package "Maintenance Record Aggregate" {
     description : String
     startDate : Date
     expectedDuration : int
-    isCompleted : boolean
+    completionDate : Date
+    maintenanceStatus : MaintenanceStatus
     completionNotes : String
     maintenanceComponent : ComponentType
     maintenanceCost : double
   }
 
+  enum MaintenanceStatus {
+   SCHEDULED,
+   IN_PROGRESS,
+   WAITING_PARTS,
+   COMPLETED,
+   CANCELED
+ }
+
   MaintenanceRecord "1" *-- "1" ComponentType : uses >
+  MaintenanceRecord "1" *-- "1" MaintenanceStatus : uses >
 }
 
 ' ==========================================
 ' RELAÇÕES GLOBAIS ENTRE AGGREGADOS
 ' ==========================================
 AircraftModel "*" --> "1" Manufacturer : built by >
-Airport "*" --> "1" AirportType : categorized as >
 
 Aircraft "*" --> "1" AircraftModel : is of type >
 Airport "*" --> "*" AircraftModel : certifies >
