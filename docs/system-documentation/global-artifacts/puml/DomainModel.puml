@@ -4,16 +4,19 @@ skinparam packageStyle rectangle
 hide empty methods
 title AlSafe - Domain Model
 
-' ==========================================
+
 ' WP #0A - SYSTEM SETUP
-' ==========================================
+
 package "User Aggregate" {
   class User <<aggregate root>> <<entity>> {
     username : String
     password : Password
   }
-  class Role <<value object>> {
-    roleName : String
+  enum Role {
+    BACKOFFICE_OPERATOR
+    ATCC
+    MAINTENANCE_TECHNICIAN
+    MAINTENANCE_SUPERVISOR
   }
   User "1" *-- "1..*" Role : has >
 }
@@ -24,9 +27,9 @@ package "Manufacturer Aggregate" {
   }
 }
 
-' ==========================================
+
 ' WP #1A & #1B - ENHANCED AIRCRAFT MANAGEMENT
-' ==========================================
+
 package "Aircraft Model Aggregate" {
   class AircraftModel <<aggregate root>> <<entity>> {
     modelName : String
@@ -60,9 +63,9 @@ package "Aircraft Aggregate" {
   Aircraft "1" *-- "1" AircraftStatus : uses >
 }
 
-' ==========================================
+
 ' WP #2A & #2B - ENHANCED AIRPORTS
-' ==========================================
+
 package "Airport Aggregate" {
   enum AirportStatus {
     OPERATIONAL
@@ -110,9 +113,9 @@ package "Airport Aggregate" {
   Airport "1" *-- "1" FacilityInfo : provides >
 }
 
-' ==========================================
+
 ' WP #3A - FLIGHT ROUTES
-' ==========================================
+
 package "Route Aggregate" {
   class Route <<aggregate root>> <<entity>> {
     estimatedFlightTime : int
@@ -130,9 +133,9 @@ package "Route Aggregate" {
     Route "1" *-- "1" RouteID : has >
 }
 
-' ==========================================
+
 ' WP #3B - FLIGHT SCHEDULING
-' ==========================================
+
 package "Scheduled Flight Aggregate" {
 
   enum FlightStatus {
@@ -157,9 +160,9 @@ package "Scheduled Flight Aggregate" {
   ScheduledFlight "1" *-- "1" FlightStatus : uses >
 }
 
-' ==========================================
+
 ' WP #4A & #4B - ENHANCED MAINTENANCE
-' ==========================================
+
 package "Maintenance Template Aggregate" {
   enum TemplateType {
     INSPECTION
@@ -213,9 +216,9 @@ package "Maintenance Record Aggregate" {
   MaintenanceRecord "1" *-- "1" MaintenanceStatus : uses >
 }
 
-' ==========================================
+
 ' RELAÇÕES GLOBAIS ENTRE AGGREGADOS
-' ==========================================
+
 AircraftModel "*" --> "1" Manufacturer : built by >
 
 Aircraft "*" --> "1" AircraftModel : is of type >
