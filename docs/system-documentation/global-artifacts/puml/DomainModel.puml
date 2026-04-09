@@ -80,9 +80,21 @@ package "Airport Aggregate" {
     region : String
     timezone : String
     operationalHours : String
-    contactInformation : String
     photos : List<String>
     operationalStatus : AirportStatus
+  }
+
+  enum ContactType <<value object>> {
+      PHONE
+      EMAIL
+      FAX
+      RADIO
+    }
+
+  class ContactInfo <<value object>> {
+      contactType : ContactType
+      value : String
+      department : String
   }
 
   class IATAcode <<value object>> {
@@ -111,6 +123,8 @@ package "Airport Aggregate" {
   Airport "1" *-- "1..*" RunwayInfo : has >
   Airport "1" *-- "1" AirportStatus : uses >
   Airport "1" *-- "1" FacilityInfo : provides >
+  Airport "1" *-- "1..*" ContactInfo : has >
+  ContactInfo "1" *-- "1" ContactType : of type >
 }
 
 
@@ -118,6 +132,7 @@ package "Airport Aggregate" {
 
 package "Route Aggregate" {
   class Route <<aggregate root>> <<entity>> {
+    distance : double
     estimatedFlightTime : int
     isActive : boolean
   }

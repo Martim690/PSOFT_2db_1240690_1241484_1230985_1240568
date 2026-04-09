@@ -12,14 +12,16 @@
 | **Airport** | Aggregate Root / Entity | Airport infrastructure. Records geographical data, region, country, operational hours, contact info, and certifies compatible aircraft models for its runways.           |
 | **IATAcode** | Value Object            | Unique standard identifier for an airport.                                                                                                                               |
 | **AirportStatus** | Enum                    | Current operational state of an airport (Operational, Closed, Under Maintenance).                                                                                        |
-| **Fleet** | Domain Concept | The complete collection of all physical airplanes (`Aircraft`) managed and operated by the Air Transport Company (ATC). |
+| **Fleet** | Domain Concept | The complete collection of all physical airplanes (`Aircraft`) managed and operated by the Air Transport Company (ATC).                                                  |
 | **Coordinates** | Value Object            | Exact geographical location (latitude/longitude) of an airport.                                                                                                          |
 | **RunwayInfo** | Value Object            | Structural data of an airport's runway (name, length, orientation).                                                                                                      |
 | **FacilityInfo** | Value Object            | Groups detailed information about passenger infrastructures within an airport (terminals, gates, and services).                                                          |
+| **ContactInfo** | Value Object            | Detailed contact information for an airport, including the contact value and an optional department/description.                                                         |
+| **ContactType** | Enum                    | Defines the specific communication channel for a contact (e.g., Phone, Email, Fax, Radio).                                                                               |
 | **Route** | Aggregate Root / Entity | Planned flight path in the system, linking an origin airport to a destination airport. Includes estimated flight time and active status.                                 |
 | **RouteID** | Value Object            | Unique business identifier for a specific route.                                                                                                                         |
 | **RouteRequirements** | Value Object            | Minimum technical demands (range and capacity) required for an aircraft to safely operate a specific route.                                                              |
-| **Network** | Domain Concept | The specific subset of all `Route` instances in the system that are currently active (`isActive = true`). |
+| **Network** | Domain Concept | The specific subset of all `Route` instances in the system that are currently active (`isActive = true`).                                                                |
 | **ScheduledFlight** | Aggregate Root / Entity | The temporal and physical allocation of an aircraft to a Route to perform a flight on a specific date and time.                                                          |
 | **FlightNumber** | Value Object            | Unique alphanumeric identifier for a scheduled flight.                                                                                                                   |
 | **FlightStatus** | Enum                    | Finite list of possible states for the lifecycle of a scheduled flight (Scheduled, Delayed, Canceled, In-Flight, Completed).                                             |
