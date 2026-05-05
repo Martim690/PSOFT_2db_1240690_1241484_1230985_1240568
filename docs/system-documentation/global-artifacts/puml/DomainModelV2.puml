@@ -65,7 +65,7 @@ package "Airport Aggregate" {
     country : String
     region : String
     timezone : String
-    operationalHours : String
+    operationalHours : LocalTime
     photos : List<String>
     operationalStatus : AirportStatus
   }
@@ -97,6 +97,14 @@ package "Airport Aggregate" {
     department : String
   }
 
+  class AircraftAirportCertification <<entity>> {
+    certificationCode : String
+    description : String
+    certifiedFrom : Date
+    certifiedUntil : Date
+    notes : String
+  }
+
   enum AirportStatus {
     OPERATIONAL
     CLOSED
@@ -116,20 +124,8 @@ package "Airport Aggregate" {
   Airport "1" *-- "1" FacilityInfo
   Airport "1" *-- "1..*" ContactInfo
   Airport "1" *-- "1" AirportStatus
+  Airport "1" *-- "0..*" AircraftAirportCertification : certifies >
   ContactInfo "1" *-- "1" ContactType
-}
-
-package "Certification Aggregate" {
-  class AircraftAirportCertification <<aggregate root>> <<entity>> {
-    certificationCode : String
-    description : String
-    certifiedFrom : Date
-    certifiedUntil : Date
-    notes : String
-  }
-
-  AircraftAirportCertification "*" --> "1" AircraftModel : certifies model >
-  AircraftAirportCertification "*" --> "1" Airport : certifies airport >
 }
 
 package "Route Aggregate" {
@@ -234,6 +230,7 @@ package "Maintenance Aggregate" {
   MaintenanceRecord "1" *-- "1" MaintenanceStatus
 }
 
+AircraftAirportCertification "*" --> "1" AircraftModel : allows model >
 Route "*" --> "1" Airport : origin >
 Route "*" --> "1" Airport : destination >
 ScheduledFlight "*" --> "1" Route : follows >
