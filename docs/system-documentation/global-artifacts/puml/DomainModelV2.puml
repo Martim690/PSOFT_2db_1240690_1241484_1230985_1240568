@@ -45,13 +45,6 @@ package "Aircraft Aggregate" {
     registrationNumber : String
   }
 
-  class AircraftCertification <<value object>> {
-    certificationCode : String
-    description : String
-    validFrom : Date
-    validUntil : Date
-  }
-
   enum AircraftStatus {
     AVAILABLE
     IN_FLIGHT
@@ -63,7 +56,6 @@ package "Aircraft Aggregate" {
   Aircraft "*" --> "1" AircraftModel : is of model >
   Aircraft "1" *-- "1" RegistrationNumber
   Aircraft "1" *-- "1" AircraftStatus
-  AircraftModel "1" *-- "0..*" AircraftCertification : has >
 }
 
 package "Airport Aggregate" {
@@ -105,12 +97,6 @@ package "Airport Aggregate" {
     department : String
   }
 
-  class AirportAircraftCertification <<entity>> {
-    certifiedFrom : Date
-    certifiedUntil : Date
-    notes : String
-  }
-
   enum AirportStatus {
     OPERATIONAL
     CLOSED
@@ -131,8 +117,19 @@ package "Airport Aggregate" {
   Airport "1" *-- "1..*" ContactInfo
   Airport "1" *-- "1" AirportStatus
   ContactInfo "1" *-- "1" ContactType
+}
 
-  Airport "1" *-- "0..*" AirportAircraftCertification : certifies >
+package "Certification Aggregate" {
+  class AircraftAirportCertification <<aggregate root>> <<entity>> {
+    certificationCode : String
+    description : String
+    certifiedFrom : Date
+    certifiedUntil : Date
+    notes : String
+  }
+
+  AircraftAirportCertification "*" --> "1" AircraftModel : certifies model >
+  AircraftAirportCertification "*" --> "1" Airport : certifies airport >
 }
 
 package "Route Aggregate" {
@@ -237,7 +234,6 @@ package "Maintenance Aggregate" {
   MaintenanceRecord "1" *-- "1" MaintenanceStatus
 }
 
-AirportAircraftCertification "*" --> "1" AircraftModel : allows >
 Route "*" --> "1" Airport : origin >
 Route "*" --> "1" Airport : destination >
 ScheduledFlight "*" --> "1" Route : follows >
