@@ -1,0 +1,15 @@
+# Use this workspace to collaborate
+workspace:
+  id: 9cfa2176-e0f2-441e-8556-6170e45526a7
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  collections:
+    ..\postman\collections\AlSafe API: 19f13323-0669-4678-89ed-2628070fac45
+
+# All resources in the `postman/` folder are automatically registered in Local View.
+# Point to additional files outside the `postman/` folder to register them individually. Example:
+#localResources:
+#  collections:
+#    - ../tests/E2E Test Collection/
