@@ -34,11 +34,8 @@ public class ApplicationConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        // A MAGIA ESTÁ AQUI: Passamos o serviço diretamente no construtor (1 argumento)!
-        // Igualzinho ao do Vasco Magolo.
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService());
 
-        // Repara que já NÃO USAMOS o authProvider.setUserDetailsService(...)
         authProvider.setPasswordEncoder(passwordEncoder());
 
         return authProvider;

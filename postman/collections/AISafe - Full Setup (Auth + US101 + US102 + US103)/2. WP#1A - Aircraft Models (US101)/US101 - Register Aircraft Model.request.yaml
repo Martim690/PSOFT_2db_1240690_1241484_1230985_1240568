@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{base_url}}/api/aircraft-models"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: text
+  content: |-
+    {
+      "manufacturerName": "AIRBUS",
+      "modelName": "A320neo",
+      "fuelCapacity": 26730,
+      "maximumRange": 6300,
+      "cruisingSpeed": 833
+    }
+order: 1000

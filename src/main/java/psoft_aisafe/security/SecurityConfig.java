@@ -1,5 +1,6 @@
 package psoft_aisafe.security;
 
+import org.springframework.http.HttpMethod;
 import psoft_aisafe.security.infrastructure.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,11 +29,14 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // Permite login sem token
-                        .requestMatchers("/h2-console/**").permitAll() // Permite ver a BD
-                        .requestMatchers("/", "/api/auth/**", "/api/health/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .anyRequest().authenticated() // Tudo o resto exige login
+                        //WP #1A
+                        .requestMatchers(HttpMethod.POST, "/api/aircraft-models").hasAnyAuthority("BACKOFFICE_OPERATOR", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/aircrafts").hasAnyAuthority("ATCC", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/aircraft-models/**", "/api/aircrafts/**").hasAnyAuthority("BACKOFFICE_OPERATOR", "ATCC", "ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)

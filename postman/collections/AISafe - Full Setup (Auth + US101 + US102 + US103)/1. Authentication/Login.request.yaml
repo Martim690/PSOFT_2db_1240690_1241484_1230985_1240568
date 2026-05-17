@@ -4,14 +4,12 @@ method: POST
 headers:
   Content-Type: application/json
 body:
-  type: json
+  type: text
   content: |-
     {
-      "username": "admin",
-      "password": "admin123"
+      "username": "operator",
+      "password": "operator123"
     }
-auth:
-  type: noauth
 scripts:
   - type: afterResponse
     code: |-
@@ -21,4 +19,4 @@ scripts:
           console.log("Token guardado com sucesso!");
       }
     language: text/javascript
-order: 1000
+order: 2000

@@ -1,0 +1,5 @@
+$kind: collection
+description: Coleção completa contendo Autenticação, US101 (Modelos), US102 (Instâncias por Matrícula) e US103 (Detalhes por Matrícula).
+variables:
+  base_url: http://localhost:8080
+  jwt_token: ""
