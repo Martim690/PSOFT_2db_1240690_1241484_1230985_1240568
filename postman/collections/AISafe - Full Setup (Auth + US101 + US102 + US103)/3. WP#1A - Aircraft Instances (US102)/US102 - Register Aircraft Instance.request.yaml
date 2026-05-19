@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{base_url}}/api/aircrafts"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: text
+  content: |-
+    {
+      "registrationNumber": "CS-TPA",
+      "modelName": "A320neo",
+      "manufacturingDate": "2022-03-15",
+      "seatingCapacity": 174,
+      "currentStatus": "AVAILABLE"
+    }
+order: 1000

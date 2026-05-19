@@ -1,0 +1,15 @@
+# Use this workspace to collaborate
+workspace:
+  id: 9cfa2176-e0f2-441e-8556-6170e45526a7
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  collections:
+    ..\postman\collections\AISafe - Full Setup (Auth + US101 + US102 + US103): 24240b6d-2061-4766-8bd6-2ca792d9f082
+
+# All resources in the `postman/` folder are automatically registered in Local View.
+# Point to additional files outside the `postman/` folder to register them individually. Example:
+#localResources:
+#  collections:
+#    - ../tests/E2E Test Collection/
