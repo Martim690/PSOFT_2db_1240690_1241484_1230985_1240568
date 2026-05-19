@@ -1,9 +1,11 @@
 package psoft_aisafe.aircrafts.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 @Entity
 @Table(name = "aircraft_models")
+@Getter
 public class AircraftModel {
 
     @Id
@@ -46,30 +48,5 @@ public class AircraftModel {
         this.maximumRange = maximumRange;
         this.cruisingSpeed = cruisingSpeed;
         this.manufacturer = manufacturer;
-    }
-
-    // Getters
-    public Long getId() {
-        return id;
-    }
-
-    public String getModelName() {
-        return modelName;
-    }
-
-    public int getFuelCapacity() {
-        return fuelCapacity;
-    }
-
-    public int getMaximumRange() {
-        return maximumRange;
-    }
-
-    public int getCruisingSpeed() {
-        return cruisingSpeed;
-    }
-
-    public AircraftManufacturer getManufacturer() {
-        return manufacturer;
     }
 }

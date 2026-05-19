@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{base_url}}/api/aircrafts/CS-TPA/status"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: text
+  content: |-
+    {
+      "status": "UNDER_MAINTENANCE"
+    }
+order: 1000
