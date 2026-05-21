@@ -1,0 +1,42 @@
+@startuml
+autonumber
+actor "Backoffice Operator/Admin" as BO
+participant "AircraftModelController" as Ctrl
+participant "RegisterAircraftModelUseCase" as UC
+participant "AircraftModel\n(Entity)" as Entity
+participant "AircraftModelRepository" as Repo
+database "Database" as DB
+
+BO -> Ctrl : POST /api/aircraft-models (JSON)
+activate Ctrl
+
+Ctrl -> UC : execute(request)
+activate UC
+
+note right of UC: Extracts data from DTO\n(request)
+
+UC -> Entity ** : new AircraftModel(name, fuel, range, speed, manufacturer)
+activate Entity
+
+note right of Entity: Domain validation occurs here\n(e.g., fuel > 0, range > 0)
+
+Entity --> UC : aircraftModel (validated object)
+deactivate Entity
+
+UC -> Repo : save(aircraftModel)
+activate Repo
+
+Repo -> DB : INSERT INTO aircraft_models (...)
+activate DB
+DB --> Repo : saved record (with auto-generated ID)
+deactivate DB
+
+Repo --> UC : savedModel
+deactivate Repo
+
+UC --> Ctrl : savedModel
+deactivate UC
+
+Ctrl --> BO : 201 Created (JSON Response)
+deactivate Ctrl
+@enduml

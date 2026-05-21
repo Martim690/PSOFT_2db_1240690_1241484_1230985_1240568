@@ -16,7 +16,6 @@ public class ListAircraftModelsUseCase {
     }
 
     public List<AircraftModel> execute() {
-        // Vai à base de dados e devolve todos os modelos guardados!
         return modelRepository.findAll();
     }
 }

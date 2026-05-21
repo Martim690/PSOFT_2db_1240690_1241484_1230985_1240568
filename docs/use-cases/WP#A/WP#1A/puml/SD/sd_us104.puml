@@ -1,0 +1,35 @@
+@startuml
+autonumber
+actor "ATCC / Admin" as User
+participant "AircraftController" as Ctrl
+participant "SearchAircraftsUseCase" as UC
+participant "AircraftRepository" as Repo
+database "Database" as DB
+
+User -> Ctrl : GET /api/aircrafts/search?model=...&status=...
+activate Ctrl
+
+note right of Ctrl: Extracts optional query\nparameters (model, status, year)
+
+Ctrl -> UC : execute(model, status, year)
+activate UC
+
+UC -> Repo : searchAircrafts(model, status, year)
+activate Repo
+
+note right of Repo: Executes the custom JPQL @Query\nto filter directly in the database
+
+Repo -> DB : SELECT * FROM aircrafts WHERE\n(model = ?) AND (status = ?) ...
+activate DB
+DB --> Repo : List<Aircraft> (filtered records)
+deactivate DB
+
+Repo --> UC : List<Aircraft>
+deactivate Repo
+
+UC --> Ctrl : List<Aircraft>
+deactivate UC
+
+Ctrl --> User : 200 OK (JSON Array Response)
+deactivate Ctrl
+@enduml

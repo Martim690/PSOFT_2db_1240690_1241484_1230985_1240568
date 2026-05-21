@@ -1,0 +1,53 @@
+@startuml
+autonumber
+actor "ATCC / Admin" as ATCC
+participant "AircraftController" as Ctrl
+participant "RegisterAircraftUseCase" as UC
+participant "AircraftModelRepository" as ModelRepo
+participant "RegistrationNumber\n(Value Object)" as VO
+participant "Aircraft\n(Entity)" as Entity
+participant "AircraftRepository" as Repo
+database "Database" as DB
+
+ATCC -> Ctrl : POST /api/aircrafts (JSON)
+activate Ctrl
+
+Ctrl -> UC : execute(request)
+activate UC
+
+note right of UC: Extracts data from DTO\n(request)
+
+UC -> ModelRepo : findByModelName(request.modelName)
+activate ModelRepo
+ModelRepo --> UC : aircraftModel
+deactivate ModelRepo
+
+UC -> VO ** : new RegistrationNumber(request.registrationNumber)
+activate VO
+note right of VO: Value Object validation\n(e.g., cannot be empty)
+VO --> UC : regNumber (validated VO)
+deactivate VO
+
+UC -> Entity ** : new Aircraft(regNumber, aircraftModel, date, capacity, status)
+activate Entity
+note right of Entity: Domain validation occurs here\n(e.g., capacity > 0, status != null)
+Entity --> UC : aircraft (validated object)
+deactivate Entity
+
+UC -> Repo : save(aircraft)
+activate Repo
+
+Repo -> DB : INSERT INTO aircrafts (...)
+activate DB
+DB --> Repo : saved record (with auto-generated ID)
+deactivate DB
+
+Repo --> UC : savedAircraft
+deactivate Repo
+
+UC --> Ctrl : savedAircraft
+deactivate UC
+
+Ctrl --> ATCC : 201 Created (JSON Response)
+deactivate Ctrl
+@enduml

@@ -23,7 +23,7 @@ public class RegisterUserUseCase {
     public AuthResponse execute(RegisterRequest request) {
         var user = new User(
                 request.username(),
-                passwordEncoder.encode(request.password()) // Encriptar a password!
+                passwordEncoder.encode(request.password())
         );
 
         if (request.roles() != null) {

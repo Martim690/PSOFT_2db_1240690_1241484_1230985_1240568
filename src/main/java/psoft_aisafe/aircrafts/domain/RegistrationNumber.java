@@ -2,25 +2,20 @@ package psoft_aisafe.aircrafts.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.Getter;
 
 @Embeddable
+@Getter
 public class RegistrationNumber {
-
-    // unique = true porque não podem existir 2 aviões com a mesma matrícula!
     @Column(name = "registration_number", unique = true, nullable = false)
     private String number;
 
-    protected RegistrationNumber() {} // Exigido pelo JPA
+    protected RegistrationNumber() {}
 
     public RegistrationNumber(String number) {
         if (number == null || number.trim().isEmpty()) {
-            throw new IllegalArgumentException("A matrícula não pode ser vazia.");
+            throw new IllegalArgumentException("Registration number cannot be empty.");
         }
-        // Guardamos sempre em maiúsculas (ex: "cs-tpa" vira "CS-TPA")
         this.number = number.trim().toUpperCase();
-    }
-
-    public String getNumber() {
-        return number;
     }
 }

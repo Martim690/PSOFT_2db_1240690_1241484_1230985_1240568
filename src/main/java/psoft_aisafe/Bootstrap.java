@@ -31,10 +31,14 @@ public class Bootstrap implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-
-        // --- A TUA PARTE DOS UTILIZADORES ---
+    //Users
         if (userRepository.findByUsername("admin").isEmpty()) {
             User admin = new User("admin", passwordEncoder.encode("admin123"));
+            admin.addRole(Role.ADMIN);
+            userRepository.save(admin);
+        }
+        if (userRepository.findByUsername("barcodolixo").isEmpty()) {
+            User admin = new User("barcodolixo", passwordEncoder.encode("carrosrapidos123"));
             admin.addRole(Role.ADMIN);
             userRepository.save(admin);
         }
@@ -48,13 +52,13 @@ public class Bootstrap implements CommandLineRunner {
             atcc.addRole(Role.ATCC);
             userRepository.save(atcc);
         }
-
+//Aircraft Model
         AircraftModel boeing737 = aircraftModelRepository.findByModelName("B737-800")
                 .orElseGet(() -> aircraftModelRepository.save(new AircraftModel("B737-800", 26020, 5436, 842, AircraftManufacturer.BOEING)));
 
         AircraftModel airbusA320 = aircraftModelRepository.findByModelName("A320neo")
                 .orElseGet(() -> aircraftModelRepository.save(new AircraftModel("A320neo", 26730, 6300, 833, AircraftManufacturer.AIRBUS)));
-
+//Aircraft
         RegistrationNumber reg1 = new RegistrationNumber("CS-TPA");
         if (aircraftRepository.findByRegistrationNumber(reg1).isEmpty()) {
             aircraftRepository.save(new Aircraft(reg1, boeing737, LocalDate.of(2018, 5, 20), 180, AircraftStatus.AVAILABLE));

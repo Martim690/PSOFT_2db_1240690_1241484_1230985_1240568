@@ -1,0 +1,58 @@
+@startuml
+autonumber
+actor "ATCC / Admin" as User
+participant "AircraftController" as Ctrl
+participant "UpdateAircraftStatusUseCase" as UC
+participant "RegistrationNumber\n(Value Object)" as VO
+participant "AircraftRepository" as Repo
+participant "Aircraft\n(Entity)" as Entity
+database "Database" as DB
+
+User -> Ctrl : PATCH /api/aircrafts/{registrationNumber}/status\n(JSON with new status)
+activate Ctrl
+
+Ctrl -> UC : execute(registrationText, request)
+activate UC
+
+note right of UC: Extracts raw registration string\nand new status from DTO
+
+UC -> VO ** : new RegistrationNumber(registrationText)
+activate VO
+note right of VO: Value Object validation\n(e.g., cannot be empty)
+VO --> UC : regNumber (validated VO)
+deactivate VO
+
+UC -> Repo : findByRegistrationNumber(regNumber)
+activate Repo
+
+Repo -> DB : SELECT * FROM aircrafts\nWHERE registration_number = ?
+activate DB
+DB --> Repo : existing aircraft record
+deactivate DB
+
+Repo --> UC : aircraft (Entity)
+deactivate Repo
+
+UC -> Entity : updateStatus(request.status)
+activate Entity
+note right of Entity: Domain validation occurs here\n(e.g., status cannot be null)
+Entity --> UC :
+deactivate Entity
+
+UC -> Repo : save(aircraft)
+activate Repo
+
+Repo -> DB : UPDATE aircrafts SET current_status = ?\nWHERE id = ?
+activate DB
+DB --> Repo : updated record confirmation
+deactivate DB
+
+Repo --> UC : updatedAircraft
+deactivate Repo
+
+UC --> Ctrl : updatedAircraft
+deactivate UC
+
+Ctrl --> User : 200 OK (JSON Response)
+deactivate Ctrl
+@enduml
