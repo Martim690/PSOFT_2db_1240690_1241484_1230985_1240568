@@ -35,7 +35,10 @@ public class SecurityConfig {
                         //WP #1A
                         .requestMatchers(HttpMethod.POST, "/api/aircraft-models").hasAnyAuthority("BACKOFFICE_OPERATOR", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/aircrafts").hasAnyAuthority("ATCC", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/aircraft-models/**", "/api/aircrafts/**").hasAnyAuthority("BACKOFFICE_OPERATOR", "ATCC", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/aircrafts/search").hasAnyAuthority("ATCC", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/aircrafts/*").hasAnyAuthority("ATCC", "BACKOFFICE_OPERATOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/aircraft-models/**", "/api/aircrafts").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/aircrafts/*/status").hasAnyAuthority("ATCC", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

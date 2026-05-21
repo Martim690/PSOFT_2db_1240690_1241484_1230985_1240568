@@ -1,0 +1,40 @@
+@startuml
+autonumber
+actor "ATCC / Backoffice / Admin" as User
+participant "AircraftController" as Ctrl
+participant "GetAircraftByRegistrationUseCase" as UC
+participant "RegistrationNumber\n(Value Object)" as VO
+participant "AircraftRepository" as Repo
+database "Database" as DB
+
+User -> Ctrl : GET /api/aircrafts/{registrationNumber}
+activate Ctrl
+
+Ctrl -> UC : execute(registrationText)
+activate UC
+
+note right of UC: registrationText is a raw String\n(e.g., "CS-TPA")
+
+UC -> VO ** : new RegistrationNumber(registrationText)
+activate VO
+note right of VO: Value Object validation\n(e.g., cannot be empty)
+VO --> UC : regNumber (validated VO)
+deactivate VO
+
+UC -> Repo : findByRegistrationNumber(regNumber)
+activate Repo
+
+Repo -> DB : SELECT * FROM aircrafts\nWHERE registration_number = ?
+activate DB
+DB --> Repo : aircraft record
+deactivate DB
+
+Repo --> UC : aircraft (Entity)
+deactivate Repo
+
+UC --> Ctrl : aircraft
+deactivate UC
+
+Ctrl --> User : 200 OK (JSON Response)
+deactivate Ctrl
+@enduml

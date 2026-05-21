@@ -1,0 +1,34 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Admin" as Admin
+actor "Backoffice Operator" as BO
+actor "ATCC" as ATCC
+
+package "AISafe - WP#1A: Aircraft Management" {
+    usecase "US101: Register Aircraft Model" as UC101
+    usecase "US102: Register Aircraft Instance" as UC102
+    usecase "US103: Get Aircraft Details" as UC103
+    usecase "US104: Search Aircrafts" as UC104
+    usecase "US105: Update Aircraft Status" as UC105
+}
+
+
+BO --> UC101
+Admin --> UC101
+
+ATCC --> UC102
+Admin --> UC102
+
+ATCC --> UC103
+BO --> UC103
+Admin --> UC103
+
+ATCC --> UC104
+Admin --> UC104
+
+ATCC --> UC105
+Admin --> UC105
+
+@enduml
