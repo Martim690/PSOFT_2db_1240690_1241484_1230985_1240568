@@ -1,0 +1,65 @@
+@startuml
+title Register an Airport - Domain Model excerpt
+
+package "Airport Aggregate" {
+  enum AirportStatus {
+    OPERATIONAL
+    CLOSED
+    UNDER_MAINTENANCE
+  }
+
+  class Airport <<aggregate root>> <<entity>> {
+    name : String
+    city : String
+    country : String
+    region : String
+    timezone : String
+    operationalHours : String
+    photos : List<String>
+    operationalStatus : AirportStatus
+  }
+
+  enum ContactType <<value object>> {
+      PHONE
+      EMAIL
+      FAX
+      RADIO
+    }
+
+  class ContactInfo <<value object>> {
+      contactType : ContactType
+      value : String
+      department : String
+  }
+
+  class IATAcode <<value object>> {
+    code : String
+  }
+
+  class Coordinates <<value object>> {
+    latitude : double
+    longitude : double
+  }
+
+  class RunwayInfo <<value object>> {
+    name : String
+    length : int
+    orientation : String
+  }
+
+  class FacilityInfo <<value object>> {
+    terminals : int
+    gates : int
+    services : List<String>
+  }
+
+  Airport "1" *-- "1" Coordinates : located at >
+  Airport "1" *-- "1" IATAcode : has >
+  Airport "1" *-- "1..*" RunwayInfo : has >
+  Airport "1" *-- "1" AirportStatus : uses >
+  Airport "1" *-- "1" FacilityInfo : provides >
+  Airport "1" *-- "1..*" ContactInfo : has >
+  ContactInfo "1" *-- "1" ContactType : of type >
+}
+
+@enduml

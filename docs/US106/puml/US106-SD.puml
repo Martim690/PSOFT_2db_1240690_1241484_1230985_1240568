@@ -1,0 +1,48 @@
+@startuml
+title Register an Airport - POST /registerAirport
+
+actor User as "BackOffice Operator"
+
+participant Controller  as "RegisterAirportController"
+participant UseCase     as "RegisterAirportUseCase <<@UseCase>>"
+participant Service     as "RegisterAirportService"
+participant Factory     as "AirportFactory"
+participant Airport     as "Airport\nAggregate"
+participant Repo        as "AirportRepository"
+participant DTO         as "RegisterAirportDTO"
+
+'----------'----------'----------'
+'Connections
+
+User -> Controller : POST /registerAirport
+activate Controller
+
+Controller -> UseCase :
+activate UseCase
+
+UseCase -> Service :
+activate Service
+
+Service -> Factory :
+activate Factory
+
+Factory -> Airport :
+activate Airport
+Airport -> Factory :
+deactivate Airport
+
+Factory -> Service :
+deactivate Factory
+
+Service -> Repo : save
+
+Service -> UseCase :
+deactivate Service
+
+UseCase -> Controller :
+deactivate UseCase
+
+Controller -> User : HTTP 201 Created (JSON Response)
+deactivate Controller
+
+@enduml
