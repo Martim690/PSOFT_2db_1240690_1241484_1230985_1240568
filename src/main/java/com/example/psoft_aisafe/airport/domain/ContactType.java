@@ -1,4 +1,4 @@
-package com.example.psoft_aisafe.model.enums;
+package com.example.psoft_aisafe.airport.domain;
 
 /**
  *  Enum of possible valid types of contacts

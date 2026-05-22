@@ -1,4 +1,4 @@
-package com.example.psoft_aisafe.model.classes;
+package com.example.psoft_aisafe.airport.domain;
 
 import org.springframework.util.Assert;
 

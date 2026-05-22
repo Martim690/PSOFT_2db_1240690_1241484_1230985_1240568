@@ -1,6 +1,5 @@
-package com.example.psoft_aisafe.model.classes;
+package com.example.psoft_aisafe.airport.domain;
 
-import com.example.psoft_aisafe.model.enums.ContactType;
 import org.springframework.util.Assert;
 
 /**
