@@ -1,5 +1,6 @@
 package psoft_aisafe.security;
 
+import io.swagger.v3.oas.annotations.Operation;
 import psoft_aisafe.security.application.AuthenticateUserUseCase;
 import psoft_aisafe.security.application.RegisterUserUseCase;
 import psoft_aisafe.security.application.dtos.AuthResponse;
@@ -23,11 +24,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Login User")
     public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest request) {
         return ResponseEntity.ok(authenticateUserUseCase.execute(request));
     }
 
     @PostMapping("/register")
+    @Operation(summary = "Register User")
     public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest request) {
         return ResponseEntity.ok(registerUserUseCase.execute(request));
     }

@@ -15,6 +15,9 @@ public class Aircraft {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    private Long version;
+
     @Embedded
     private RegistrationNumber registrationNumber;
 
