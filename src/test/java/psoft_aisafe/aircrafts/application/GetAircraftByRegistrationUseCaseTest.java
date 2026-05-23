@@ -1,0 +1,42 @@
+package psoft_aisafe.aircrafts.application;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftModelRequest;
+import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftRequest;
+import psoft_aisafe.aircrafts.domain.*;
+
+import java.time.LocalDate;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+@Transactional
+class GetAircraftByRegistrationUseCaseTest {
+
+    @Autowired private GetAircraftByRegistrationUseCase getUseCase;
+    @Autowired private RegisterAircraftUseCase registerAircraftUseCase;
+    @Autowired private RegisterAircraftModelUseCase registerModelUseCase;
+
+    @Test
+    void shouldReturnAircraftFromDatabase() {
+        // Arrange
+        registerModelUseCase.execute(new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 20000, 5000, 800));
+        registerAircraftUseCase.execute(new RegisterAircraftRequest("CS-GET1", "B737", LocalDate.now(), 180, AircraftStatus.AVAILABLE));
+
+        // Act
+        Aircraft result = getUseCase.execute("CS-GET1");
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("CS-GET1", result.getRegistrationNumber().getNumber());
+    }
+
+    @Test
+    void shouldFailForNonExistentRegistration() {
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> getUseCase.execute("CS-FAKE"));
+    }
+}
