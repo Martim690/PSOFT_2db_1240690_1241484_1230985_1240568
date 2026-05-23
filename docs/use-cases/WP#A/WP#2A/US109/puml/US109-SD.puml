@@ -1,0 +1,32 @@
+@startuml
+title Update Airport Operational Status -\nPOST /airport/{iataCode}/status
+
+actor User as "BackOffice\nOperator"
+
+participant Controller  as "AirportController"
+participant UseCase     as "<<@UseCase>>\nUpdateAirportStatusUseCase"
+participant Repo        as "AirportRepository"
+
+'----------'----------'----------'
+'Connections
+
+User -> Controller : POST /airport/{iataCode}/status
+activate Controller
+
+Controller -> UseCase :
+activate UseCase
+
+UseCase -> Repo : search
+Repo -> UseCase : Airport
+
+UseCase -> Airport : updateAirplaneStatus()
+
+UseCase -> Repo : save
+
+UseCase -> Controller :
+deactivate UseCase
+
+Controller -> User : HTTP 200 OK (JSON Response)
+deactivate Controller
+
+@enduml

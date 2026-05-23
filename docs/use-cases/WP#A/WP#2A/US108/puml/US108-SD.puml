@@ -1,0 +1,33 @@
+@startuml
+title Search for Airport - GET /airport/searchAirport
+
+actor User as "ATCC"
+
+participant Controller  as "AirportController"
+participant UseCase     as "<<@UseCase>>\nViewAirportDetailsUseCase "
+participant Repo        as "AirportRepository"
+participant DTO         as "AirportDTO"
+
+'----------'----------'----------'
+'Connections
+
+User -> Controller : GET /airport/searchAirport
+activate Controller
+
+Controller -> UseCase :
+activate UseCase
+
+UseCase -> Repo : search(city | country | name)
+
+Repo -> UseCase : Airport
+
+UseCase -> DTO : map
+DTO --> UseCase
+
+UseCase -> Controller : AirportDTO
+deactivate UseCase
+
+Controller -> User : HTTP 200 OK (JSON Response)
+deactivate Controller
+
+@enduml

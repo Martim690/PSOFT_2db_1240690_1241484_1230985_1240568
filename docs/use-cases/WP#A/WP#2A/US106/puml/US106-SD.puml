@@ -1,43 +1,35 @@
 @startuml
-title Register an Airport - POST /registerAirport
+title Register an Airport - POST /airport/registerAirport
 
 actor User as "BackOffice Operator"
 
-participant Controller  as "RegisterAirportController"
-participant UseCase     as "RegisterAirportUseCase <<@UseCase>>"
-participant Service     as "RegisterAirportService"
+participant Controller  as "AirportController"
+participant UseCase     as "<<@UseCase>>\nRegisterAirportUseCase"
 participant Factory     as "AirportFactory"
 participant Airport     as "Airport\nAggregate"
 participant Repo        as "AirportRepository"
-participant DTO         as "RegisterAirportDTO"
 
 '----------'----------'----------'
 'Connections
 
-User -> Controller : POST /registerAirport
+User -> Controller : POST /airport/registerAirport
 activate Controller
 
 Controller -> UseCase :
 activate UseCase
 
-UseCase -> Service :
-activate Service
-
-Service -> Factory :
+UseCase -> Factory :
 activate Factory
 
-Factory -> Airport :
+Factory -> Airport : createAirport()
 activate Airport
 Airport -> Factory :
 deactivate Airport
 
-Factory -> Service :
+Factory -> UseCase :
 deactivate Factory
 
-Service -> Repo : save
-
-Service -> UseCase :
-deactivate Service
+UseCase -> Repo : save
 
 UseCase -> Controller :
 deactivate UseCase

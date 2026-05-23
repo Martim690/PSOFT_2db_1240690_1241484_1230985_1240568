@@ -1,0 +1,33 @@
+@startuml
+title  View Airport's details - GET /airport/{iataCode}
+
+actor User as "BackOffice Operator /\nATCC"
+
+participant Controller  as "AirportController"
+participant UseCase     as "<<@UseCase>>\nRegisterAirportUseCase"
+participant Repo        as "AirportRepository"
+participant DTO         as "AirportDTO"
+
+'----------'----------'----------'
+'Connections
+
+User -> Controller : GET /airport/{iataCode}
+activate Controller
+
+Controller -> UseCase :
+activate UseCase
+
+UseCase -> Repo : search(IATAcode)
+
+Repo -> UseCase : Airport
+
+UseCase -> DTO : map
+DTO --> UseCase
+
+UseCase -> Controller : AirportDTO
+deactivate UseCase
+
+Controller -> User : HTTP 200 OK (JSON Response)
+deactivate Controller
+
+@enduml

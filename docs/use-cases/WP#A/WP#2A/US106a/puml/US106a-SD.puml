@@ -1,0 +1,32 @@
+@startuml
+title Adds Aircraft certification to Airport -\nPOST /airport/{iataCode}/airplane_certification
+
+actor User as "BackOffice Operator /\nATCC"
+
+participant Controller  as "AirportController"
+participant UseCase     as "<<@UseCase>>\nAddAirplaneCertificationUseCase"
+participant Repo        as "AirportRepository"
+
+'----------'----------'----------'
+'Connections
+
+User -> Controller : POST /airport/{iataCode}/airplane_certification
+activate Controller
+
+Controller -> UseCase :
+activate UseCase
+
+UseCase -> Repo : search
+Repo -> UseCase : return Airport
+
+UseCase -> Airport : addAirplaneCertification()
+
+UseCase -> Repo : save
+
+UseCase -> Controller :
+deactivate UseCase
+
+Controller -> User : HTTP 201 Created (JSON Response)
+deactivate Controller
+
+@enduml
