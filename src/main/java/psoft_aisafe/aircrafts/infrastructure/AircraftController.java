@@ -1,9 +1,14 @@
 package psoft_aisafe.aircrafts.infrastructure;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.CollectionModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
 import psoft_aisafe.aircrafts.application.GetAircraftByRegistrationUseCase;
 import psoft_aisafe.aircrafts.application.ListAircraftsUseCase;
 import psoft_aisafe.aircrafts.application.RegisterAircraftUseCase;
@@ -15,6 +20,7 @@ import psoft_aisafe.aircrafts.domain.Aircraft;
 import psoft_aisafe.aircrafts.domain.AircraftStatus;
 
 import java.util.List;
+
 @RestController
 @RequestMapping("/api/aircrafts")
 public class AircraftController {
@@ -34,19 +40,28 @@ public class AircraftController {
     }
 
     @PostMapping
-    public ResponseEntity<Aircraft> registerAircraft(@RequestBody @Valid RegisterAircraftRequest request) {
+    @Operation(summary = "Register Aircraft (US101)")
+    public ResponseEntity<EntityModel<Aircraft>> registerAircraft(@RequestBody @Valid RegisterAircraftRequest request) {
         Aircraft registeredAircraft = registerAircraftUseCase.execute(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(registeredAircraft);
+        return ResponseEntity.status(HttpStatus.CREATED).body(toModel(registeredAircraft));
     }
 
     @GetMapping
-    public ResponseEntity<List<Aircraft>> listAircrafts() {
+    @Operation(summary = "List of Aircrafts")
+    public ResponseEntity<CollectionModel<EntityModel<Aircraft>>> listAircrafts() {
         List<Aircraft> aircrafts = listAircraftsUseCase.execute();
-        return ResponseEntity.ok(aircrafts);
+
+        List<EntityModel<Aircraft>> aircraftModels = aircrafts.stream().map(this::toModel).toList();
+
+        return ResponseEntity.ok(CollectionModel.of(aircraftModels,
+                linkTo(methodOn(AircraftController.class).listAircrafts()).withSelfRel(),
+                linkTo(methodOn(AircraftController.class).getAircrafts(null, null, null)).withRel("search-aircrafts")
+        ));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Aircraft>> getAircrafts(
+    @Operation(summary = "Search Aircraft by status, model or year (US104)")
+    public ResponseEntity<CollectionModel<EntityModel<Aircraft>>> getAircrafts(
             @RequestParam(required = false) String model,
             @RequestParam(required = false) AircraftStatus status,
             @RequestParam(required = false) Integer year) {
@@ -55,26 +70,48 @@ public class AircraftController {
 
         if (model == null && status == null && year == null) {
             aircrafts = listAircraftsUseCase.execute();
-        }
-        else {
+        } else {
             aircrafts = searchAircraftsUseCase.execute(model, status, year);
         }
 
-        return ResponseEntity.ok(aircrafts);
+        List<EntityModel<Aircraft>> aircraftModels = aircrafts.stream().map(this::toModel).toList();
+
+        return ResponseEntity.ok(CollectionModel.of(aircraftModels,
+                linkTo(methodOn(AircraftController.class).getAircrafts(model, status, year)).withSelfRel(),
+                linkTo(methodOn(AircraftController.class).listAircrafts()).withRel("all-aircrafts")
+        ));
     }
 
     @GetMapping("/{registrationNumber}")
-    public ResponseEntity<Aircraft> getAircraftByRegistration(@PathVariable String registrationNumber) {
+    @Operation(summary = "Search Aircraft by Registration Number (US103)")
+    public ResponseEntity<EntityModel<Aircraft>> getAircraftByRegistration(@PathVariable String registrationNumber) {
         Aircraft aircraft = getAircraftByRegistrationUseCase.execute(registrationNumber);
-        return ResponseEntity.ok(aircraft);
+        return ResponseEntity.ok(toModel(aircraft));
     }
 
     @PatchMapping("/{registrationNumber}/status")
-    public ResponseEntity<Aircraft> updateAircraftStatus(
+    @Operation(summary = "Update Aircraft status (US105)")
+    public ResponseEntity<EntityModel<Aircraft>> updateAircraftStatus(
             @PathVariable String registrationNumber,
             @RequestBody @Valid UpdateAircraftStatusRequest request) {
 
         Aircraft updatedAircraft = updateAircraftStatusUseCase.execute(registrationNumber, request);
-        return ResponseEntity.ok(updatedAircraft);
+
+        String reg = updatedAircraft.getRegistrationNumber().getNumber();
+        EntityModel<Aircraft> patchModel = EntityModel.of(updatedAircraft,
+                linkTo(methodOn(AircraftController.class).updateAircraftStatus(reg, null)).withSelfRel(),
+                linkTo(methodOn(AircraftController.class).getAircraftByRegistration(reg)).withRel("aircraft-details")
+        );
+
+        return ResponseEntity.ok(patchModel);
+    }
+
+    private EntityModel<Aircraft> toModel(Aircraft aircraft) {
+        String reg = aircraft.getRegistrationNumber().getNumber();
+        return EntityModel.of(aircraft,
+                linkTo(methodOn(AircraftController.class).getAircraftByRegistration(reg)).withSelfRel(),
+                linkTo(methodOn(AircraftController.class).updateAircraftStatus(reg, null)).withRel("update-status"),
+                linkTo(methodOn(AircraftController.class).listAircrafts()).withRel("all-aircrafts")
+        );
     }
 }
