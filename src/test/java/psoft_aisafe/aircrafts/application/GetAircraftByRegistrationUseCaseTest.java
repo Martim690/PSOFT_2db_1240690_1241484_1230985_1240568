@@ -22,21 +22,17 @@ class GetAircraftByRegistrationUseCaseTest {
 
     @Test
     void shouldReturnAircraftFromDatabase() {
-        // Arrange
         registerModelUseCase.execute(new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 20000, 5000, 800));
         registerAircraftUseCase.execute(new RegisterAircraftRequest("CS-GET1", "B737", LocalDate.now(), 180, AircraftStatus.AVAILABLE));
 
-        // Act
         Aircraft result = getUseCase.execute("CS-GET1");
 
-        // Assert
         assertNotNull(result);
         assertEquals("CS-GET1", result.getRegistrationNumber().getNumber());
     }
 
     @Test
     void shouldFailForNonExistentRegistration() {
-        // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> getUseCase.execute("CS-FAKE"));
     }
 }

@@ -7,7 +7,6 @@ class AircraftModelTest {
 
     @Test
     void shouldCreateAircraftModelSuccessfully() {
-        // Ordem correta que definimos: String, int, int, int, Enum
         AircraftModel model = new AircraftModel("B737", 20000, 5000, 800, AircraftManufacturer.BOEING);
 
         assertNotNull(model);

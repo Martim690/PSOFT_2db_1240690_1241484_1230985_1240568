@@ -18,24 +18,19 @@ class RegisterAircraftModelUseCaseTest {
 
     @Test
     void shouldRegisterModelSuccessfullyInDatabase() {
-        // Arrange
         RegisterAircraftModelRequest request = new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 20000, 5000, 800);
 
-        // Act
         AircraftModel result = useCase.execute(request);
 
-        // Assert
         assertNotNull(result);
         assertTrue(modelRepository.findByModelName("B737").isPresent());
     }
 
     @Test
     void shouldThrowExceptionIfModelAlreadyExistsInDatabase() {
-        // Arrange
         RegisterAircraftModelRequest request = new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 20000, 5000, 800);
-        useCase.execute(request); // Save the first one
+        useCase.execute(request);
 
-        // Act & Assert: Try to save a duplicate
         assertThrows(IllegalArgumentException.class, () -> useCase.execute(request));
     }
 }
