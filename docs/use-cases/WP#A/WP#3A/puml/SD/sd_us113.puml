@@ -1,0 +1,59 @@
+@startuml
+autonumber
+actor "ATCC / Backoffice Operator" as Actor
+participant "RouteController" as Ctrl
+participant "GetRouteByIdUseCase" as UC1
+participant "ListRoutesByAirportUseCase" as UC2
+participant "RouteRepository" as Repo
+database "Database" as DB
+
+== Get Route Details by ID ==
+
+Actor -> Ctrl : GET /api/routes/{id}
+activate Ctrl
+
+Ctrl -> UC1 : execute(routeId)
+activate UC1
+
+UC1 -> Repo : findByRouteId(routeId)
+activate Repo
+Repo -> DB : SELECT * FROM routes\nJOIN route_versions WHERE route_id = ?
+activate DB
+DB --> Repo : route with current version
+deactivate DB
+Repo --> UC1 : route
+deactivate Repo
+
+note right of UC1: Maps Route to RouteResponse\nIncludes current version data\n(distance, estimatedFlightTime)
+
+UC1 --> Ctrl : RouteResponse
+deactivate UC1
+
+Ctrl --> Actor : 200 OK (JSON Response)
+deactivate Ctrl
+
+== List All Routes from/to a Specific Airport ==
+
+Actor -> Ctrl : GET /api/routes/airport/{iata}
+activate Ctrl
+
+Ctrl -> UC2 : execute(iataCode)
+activate UC2
+
+UC2 -> Repo : findByOriginOrDestination(iataCode)
+activate Repo
+Repo -> DB : SELECT * FROM routes\nWHERE origin_iata = ? OR destination_iata = ?
+activate DB
+DB --> Repo : list of routes
+deactivate DB
+Repo --> UC2 : List<Route>
+deactivate Repo
+
+note right of UC2: Maps each Route\nto RouteResponse DTO
+
+UC2 --> Ctrl : List<RouteResponse>
+deactivate UC2
+
+Ctrl --> Actor : 200 OK (JSON Array)
+deactivate Ctrl
+@enduml

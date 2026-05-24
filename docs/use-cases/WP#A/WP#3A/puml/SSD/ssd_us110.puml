@@ -1,0 +1,15 @@
+@startuml
+autonumber
+actor "ATCC" as ATCC
+participant ":System" as System
+
+activate ATCC
+ATCC -> System : createRoute(originIataCode, destinationIataCode, estimatedFlightTime, distance, minimumRange, minimumCapacity)
+activate System
+
+note right of System: The system validates the input,\nverifies both airports exist,\nand creates the flight route.
+
+System --> ATCC : informs operation success and returns created route
+deactivate System
+deactivate ATCC
+@enduml

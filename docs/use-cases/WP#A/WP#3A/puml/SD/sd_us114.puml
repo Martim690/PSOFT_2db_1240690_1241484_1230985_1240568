@@ -1,0 +1,33 @@
+@startuml
+autonumber
+actor "ATCC" as ATCC
+participant "RouteController" as Ctrl
+participant "SearchRoutesUseCase" as UC
+participant "RouteRepository" as Repo
+database "Database" as DB
+
+ATCC -> Ctrl : GET /api/routes?origin=LIS&destination=OPO\n(both params optional)
+activate Ctrl
+
+Ctrl -> UC : execute(origin, destination)
+activate UC
+
+note right of UC: Converts non-blank strings\nto IATAcode value objects\nNull if param not provided
+
+UC -> Repo : search(origin, destination)
+activate Repo
+Repo -> DB : SELECT * FROM routes\nWHERE (origin IS NULL OR origin_iata = ?)\nAND (destination IS NULL OR destination_iata = ?)
+activate DB
+DB --> Repo : list of matching routes
+deactivate DB
+Repo --> UC : List<Route>
+deactivate Repo
+
+note right of UC: Maps each Route\nto RouteResponse DTO
+
+UC --> Ctrl : List<RouteResponse>
+deactivate UC
+
+Ctrl --> ATCC : 200 OK (JSON Array)
+deactivate Ctrl
+@enduml

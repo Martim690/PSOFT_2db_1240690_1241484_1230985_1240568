@@ -1,0 +1,31 @@
+@startuml
+autonumber
+actor "ATCC" as ATCC
+participant "RouteController" as Ctrl
+participant "GetRouteByIdUseCase" as UC
+participant "RouteRepository" as Repo
+database "Database" as DB
+
+ATCC -> Ctrl : GET /api/routes/{id}/history
+activate Ctrl
+
+Ctrl -> UC : execute(routeId)
+activate UC
+
+UC -> Repo : findByRouteId(routeId)
+activate Repo
+Repo -> DB : SELECT * FROM routes\nJOIN route_versions WHERE route_id = ?
+activate DB
+DB --> Repo : route with all versions
+deactivate DB
+Repo --> UC : route
+deactivate Repo
+
+note right of UC: Maps all RouteVersions\nto RouteVersionResponse DTOs\nordered by validFrom DESC
+
+UC --> Ctrl : List<RouteVersionResponse>
+deactivate UC
+
+Ctrl --> ATCC : 200 OK (JSON Array)
+deactivate Ctrl
+@enduml

@@ -1,0 +1,93 @@
+@startuml
+autonumber
+actor "ATCC / Backoffice Operator" as Actor
+participant "RouteController" as Ctrl
+participant "UpdateRouteUseCase" as UC
+participant "Route\n(Aggregate Root)" as Route
+participant "RouteVersion\n(Entity)" as Version
+participant "RouteRepository" as Repo
+database "Database" as DB
+
+== Update Route ==
+
+Actor -> Ctrl : PATCH /api/routes/{id} (JSON)
+activate Ctrl
+
+Ctrl -> UC : execute(routeId, request)
+activate UC
+
+UC -> Repo : findByRouteId(routeId)
+activate Repo
+Repo -> DB : SELECT * FROM routes WHERE route_id = ?
+activate DB
+DB --> Repo : route
+deactivate DB
+Repo --> UC : route
+deactivate Repo
+
+UC -> Route : update(distance, flightTime, requirements, changeReason)
+activate Route
+
+note right of Route: Closes current RouteVersion\n(sets validUntil = now)\nCreates new RouteVersion
+
+Route -> Version ** : new RouteVersion(distance, flightTime, now, changeReason)
+activate Version
+Version --> Route : newVersion
+deactivate Version
+
+Route --> UC : updated route
+deactivate Route
+
+UC -> Repo : save(route)
+activate Repo
+Repo -> DB : UPDATE route_versions (validUntil)\nINSERT INTO route_versions (...)
+activate DB
+DB --> Repo : saved record
+deactivate DB
+Repo --> UC : savedRoute
+deactivate Repo
+
+UC --> Ctrl : savedRoute
+deactivate UC
+
+Ctrl --> Actor : 200 OK (JSON Response)
+deactivate Ctrl
+
+== Deactivate Route ==
+
+Actor -> Ctrl : DELETE /api/routes/{id}/deactivate
+activate Ctrl
+
+Ctrl -> UC2 : execute(routeId)
+activate UC2
+
+UC2 -> Repo : findByRouteId(routeId)
+activate Repo
+Repo -> DB : SELECT * FROM routes WHERE route_id = ?
+activate DB
+DB --> Repo : route
+deactivate DB
+Repo --> UC2 : route
+deactivate Repo
+
+UC2 -> Route : deactivate()
+activate Route
+note right of Route: Sets isActive = false\nRoute is NOT deleted
+Route --> UC2 : ok
+deactivate Route
+
+UC2 -> Repo : save(route)
+activate Repo
+Repo -> DB : UPDATE routes SET is_active = false
+activate DB
+DB --> Repo : saved
+deactivate DB
+Repo --> UC2 : ok
+deactivate Repo
+
+UC2 --> Ctrl : void
+deactivate UC2
+
+Ctrl --> Actor : 204 No Content
+deactivate Ctrl
+@enduml
