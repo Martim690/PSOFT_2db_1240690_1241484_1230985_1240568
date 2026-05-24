@@ -26,7 +26,6 @@ class RegistrationNumberTest {
 
     @Test
     void shouldFailIfRegistrationFormatIsInvalid() {
-        // Testing a string that breaks the regex format (e.g., contains special characters)
         assertThrows(IllegalArgumentException.class, () -> new RegistrationNumber("CS@TPA!"));
     }
 }

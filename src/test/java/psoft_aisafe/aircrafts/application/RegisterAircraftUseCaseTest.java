@@ -22,24 +22,19 @@ class RegisterAircraftUseCaseTest {
 
     @Test
     void shouldRegisterAircraftSuccessfullyInDatabase() {
-        // Arrange
         modelUseCase.execute(new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 20000, 5000, 800));
         RegisterAircraftRequest request = new RegisterAircraftRequest("CS-REG1", "B737", LocalDate.now(), 180, AircraftStatus.AVAILABLE);
 
-        // Act
         Aircraft result = aircraftUseCase.execute(request);
 
-        // Assert
         assertNotNull(result);
         assertTrue(aircraftRepository.findByRegistrationNumber(new RegistrationNumber("CS-REG1")).isPresent());
     }
 
     @Test
     void shouldFailIfModelDoesNotExistInDatabase() {
-        // Arrange
         RegisterAircraftRequest request = new RegisterAircraftRequest("CS-TPB", "FAKE_MODEL", LocalDate.now(), 180, AircraftStatus.AVAILABLE);
 
-        // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> aircraftUseCase.execute(request));
     }
 }

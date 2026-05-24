@@ -23,18 +23,14 @@ class SearchAircraftsUseCaseTest {
 
     @Test
     void shouldSearchAircraftsInDatabase() {
-        // Arrange
         registerModelUseCase.execute(new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 20000, 5000, 800));
         registerAircraftUseCase.execute(new RegisterAircraftRequest("CS-SRC1", "B737", LocalDate.now(), 180, AircraftStatus.IN_FLIGHT));
         registerAircraftUseCase.execute(new RegisterAircraftRequest("CS-SRC2", "B737", LocalDate.now(), 180, AircraftStatus.AVAILABLE));
 
-        // Act: Search only for IN_FLIGHT aircrafts
         List<Aircraft> result = searchUseCase.execute(null, AircraftStatus.IN_FLIGHT, null);
 
-        // Assert
         assertFalse(result.isEmpty());
 
-        // Check if ANY aircraft in the returned list matches our CS-SRC1
         boolean found = result.stream()
                 .anyMatch(a -> a.getRegistrationNumber().getNumber().equals("CS-SRC1"));
         assertTrue(found, "The test aircraft CS-SRC1 should be in the search results.");
