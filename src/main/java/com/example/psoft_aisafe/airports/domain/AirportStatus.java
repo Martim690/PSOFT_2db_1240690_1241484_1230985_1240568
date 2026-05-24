@@ -1,4 +1,4 @@
-package com.example.psoft_aisafe.airport.domain;
+package com.example.psoft_aisafe.airports.domain;
 
 /**
  *  Enum of possible valid status for airports
