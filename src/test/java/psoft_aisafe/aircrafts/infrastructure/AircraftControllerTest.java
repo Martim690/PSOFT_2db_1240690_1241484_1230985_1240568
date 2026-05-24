@@ -64,7 +64,7 @@ class AircraftControllerTest {
     }
 
     @Test
-    void ensureCreateAircraftReturns201Created() throws Exception {
+    void ensureRegisterAircraftReturns201Created() throws Exception {
         RegisterAircraftRequest request = new RegisterAircraftRequest("CS-TPA", "A320", LocalDate.now(), 150, AircraftStatus.AVAILABLE);
 
         when(registerAircraftUseCase.execute(any())).thenReturn(mockAircraft);

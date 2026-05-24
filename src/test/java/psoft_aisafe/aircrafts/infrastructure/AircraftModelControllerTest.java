@@ -46,16 +46,13 @@ class AircraftModelControllerTest {
 
     @Test
     void ensureRegisterModelReturns201() throws Exception {
-        // Arrange: Payload exatamente como o teu record RegisterAircraftModelRequest espera
         RegisterAircraftModelRequest request = new RegisterAircraftModelRequest(
                 AircraftManufacturer.AIRBUS, "A320", 20000, 5000, 800);
 
-        // Arrange: Entidade que o UseCase retorna
         AircraftModel response = new AircraftModel("A320", 20000, 5000, 800, AircraftManufacturer.AIRBUS);
 
         when(registerAircraftModelUseCase.execute(any())).thenReturn(response);
 
-        // Act & Assert
         mockMvc.perform(post("/api/aircraft-models")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -66,7 +63,6 @@ class AircraftModelControllerTest {
 
     @Test
     void ensureRegisterModelWithInvalidDataReturns400() throws Exception {
-        // Arrange: Exemplo de dados inválidos (ex: range negativo)
         RegisterAircraftModelRequest request = new RegisterAircraftModelRequest(
                 AircraftManufacturer.AIRBUS, "A320", 20000, -1, 800);
 
