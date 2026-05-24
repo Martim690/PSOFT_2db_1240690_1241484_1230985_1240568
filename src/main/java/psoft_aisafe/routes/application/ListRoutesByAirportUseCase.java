@@ -2,7 +2,6 @@ package psoft_aisafe.routes.application;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import psoft_aisafe.model.classes.IATAcode;
 import psoft_aisafe.routes.application.dtos.RouteResponse;
 import psoft_aisafe.routes.domain.RouteRepository;
 

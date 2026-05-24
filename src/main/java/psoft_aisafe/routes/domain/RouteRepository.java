@@ -1,7 +1,5 @@
 package psoft_aisafe.routes.domain;
 
-import psoft_aisafe.model.classes.IATAcode;
-
 import java.util.List;
 import java.util.Optional;
 
