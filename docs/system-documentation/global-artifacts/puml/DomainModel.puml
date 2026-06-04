@@ -1,51 +1,37 @@
-@startuml
+ @startuml
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 hide empty methods
-title AlSafe - Domain Model
-
-
-' WP #0A - SYSTEM SETUP
+title AISafe - Domain Model
 
 package "User Aggregate" {
   class User <<aggregate root>> <<entity>> {
     username : String
     password : Password
   }
+
   enum Role {
+    ADMIN
     BACKOFFICE_OPERATOR
     ATCC
     MAINTENANCE_TECHNICIAN
     MAINTENANCE_SUPERVISOR
   }
-  User "1" *-- "1..*" Role : has >
+
+  User "1" *-- "1..*" Role: has >
 }
 
-package "Manufacturer Aggregate" {
-  class Manufacturer <<aggregate root>> <<entity>> {
+package "Aircraft Aggregate" {
+  class Manufacturer <<entity>> {
     name : String
   }
-}
 
-
-' WP #1A & #1B - ENHANCED AIRCRAFT MANAGEMENT
-
-package "Aircraft Model Aggregate" {
-  class AircraftModel <<aggregate root>> <<entity>> {
+  class AircraftModel <<entity>> {
     modelName : String
     fuelCapacity : int
     maximumRange : int
     cruisingSpeed : int
     technicalDiagramOrImage : String
-  }
-}
-
-package "Aircraft Aggregate" {
-  enum AircraftStatus {
-    AVAILABLE
-    IN_FLIGHT
-    UNDER_MAINTENANCE
-    INACTIVE
   }
 
   class Aircraft <<aggregate root>> <<entity>> {
@@ -59,20 +45,27 @@ package "Aircraft Aggregate" {
     registrationNumber : String
   }
 
-    Aircraft "1" *-- "1" RegistrationNumber : has >
-  Aircraft "1" *-- "1" AircraftStatus : uses >
-}
-
-
-' WP #2A & #2B - ENHANCED AIRPORTS
-
-package "Airport Aggregate" {
-  enum AirportStatus {
-    OPERATIONAL
-    CLOSED
-    UNDER_MAINTENANCE
+  class AircraftCertification <<value object>> {
+    certificationCode : String
+    description : String
+    validFrom : Date
+    validUntil : Date
   }
 
+  enum AircraftStatus {
+    AVAILABLE
+    IN_FLIGHT
+    UNDER_MAINTENANCE
+    INACTIVE
+  }
+
+  AircraftModel "*" --> "1" Manufacturer : built by >
+  Aircraft "*" --> "1" AircraftModel : is of model >
+  Aircraft "1" *-- "1" RegistrationNumber :  identified by >
+  Aircraft "1" *-- "1" AircraftStatus : has status >
+}
+
+package "Airport Aggregate" {
   class Airport <<aggregate root>> <<entity>> {
     name : String
     city : String
@@ -84,20 +77,7 @@ package "Airport Aggregate" {
     operationalStatus : AirportStatus
   }
 
-  enum ContactType <<value object>> {
-      PHONE
-      EMAIL
-      FAX
-      RADIO
-    }
-
-  class ContactInfo <<value object>> {
-      contactType : ContactType
-      value : String
-      department : String
-  }
-
-  class IATAcode <<value object>> {
+  class IATACode <<value object>> {
     code : String
   }
 
@@ -118,24 +98,42 @@ package "Airport Aggregate" {
     services : List<String>
   }
 
+  class ContactInfo <<value object>> {
+    contactType : ContactType
+    value : String
+    department : String
+  }
+
+
+  enum AirportStatus {
+    OPERATIONAL
+    CLOSED
+    UNDER_MAINTENANCE
+  }
+
+  enum ContactType {
+    PHONE
+    EMAIL
+    FAX
+    RADIO
+  }
+
+  Airport "1" *-- "1" IATACode : identified by >
   Airport "1" *-- "1" Coordinates : located at >
-  Airport "1" *-- "1" IATAcode : has >
-  Airport "1" *-- "1..*" RunwayInfo : has >
-  Airport "1" *-- "1" AirportStatus : uses >
+  Airport "1" *-- "1..*" RunwayInfo : contains >
   Airport "1" *-- "1" FacilityInfo : provides >
   Airport "1" *-- "1..*" ContactInfo : has >
-  ContactInfo "1" *-- "1" ContactType : of type >
+  Airport "1" *-- "1" AirportStatus : has status >
+  ContactInfo "1" *-- "1" ContactType : categorized as >
+
+  Airport "1" *-- "0..*" AirportAircraftCertification : certifies >
 }
-
-
-' WP #3A - FLIGHT ROUTES
 
 package "Route Aggregate" {
   class Route <<aggregate root>> <<entity>> {
-    distance : double
-    estimatedFlightTime : int
     isActive : boolean
   }
+
   class RouteID <<value object>> {
     routeId : String
   }
@@ -143,15 +141,34 @@ package "Route Aggregate" {
   class RouteRequirements <<value object>> {
     minimumRange : int
     minimumCapacity : int
+    requiredCertificationCode : String
   }
-  Route "1" *-- "1" RouteRequirements : demands >
-    Route "1" *-- "1" RouteID : has >
+
+  class RouteVersion <<entity>> {
+    distance : double
+    estimatedFlightTime : int
+    validFrom : DateTime
+    validUntil : DateTime
+    changeReason : String
+  }
+
+  Route "1" *-- "1" RouteID : identified by >
+  Route "1" *-- "1" RouteRequirements : constrained by >
+  Route "1" *-- "1..*" RouteVersion : history >
 }
 
-
-' WP #3B - FLIGHT SCHEDULING
-
 package "Scheduled Flight Aggregate" {
+  class ScheduledFlight <<aggregate root>> <<entity>> {
+    scheduledDeparture : DateTime
+    scheduledArrival : DateTime
+    actualDeparture : DateTime
+    actualArrival : DateTime
+    currentStatus : FlightStatus
+  }
+
+  class FlightNumber <<value object>> {
+    flightNumber : String
+  }
 
   enum FlightStatus {
     SCHEDULED
@@ -161,32 +178,12 @@ package "Scheduled Flight Aggregate" {
     COMPLETED
   }
 
-  class ScheduledFlight <<aggregate root>> <<entity>> {
-    scheduledDate : Date
-    scheduledTime : String
-    currentStatus : FlightStatus
-  }
-
-  class FlightNumber <<value object>> {
-   flightNumber : String
-  }
-
-  ScheduledFlight "1" *-- "1" FlightNumber : has >
-  ScheduledFlight "1" *-- "1" FlightStatus : uses >
+  ScheduledFlight "1" *-- "1" FlightNumber : identified by >
+  ScheduledFlight "1" *-- "1" FlightStatus : has status >
 }
 
-
-' WP #4A & #4B - ENHANCED MAINTENANCE
-
-package "Maintenance Template Aggregate" {
-  enum TemplateType {
-    INSPECTION
-    SCHEDULED_MAINTENANCE
-    OVERHAUL
-    MODIFICATION
-  }
-
-  class MaintenanceTemplate <<aggregate root>> <<entity>> {
+package "Maintenance Aggregate" {
+  class MaintenanceTemplate <<entity>> {
     templateName : String
     templateType : TemplateType
   }
@@ -195,11 +192,22 @@ package "Maintenance Template Aggregate" {
     tasks : List<String>
   }
 
-  MaintenanceTemplate "1" *-- "1" Checklist : defines >
-  MaintenanceTemplate "1" *-- "1" TemplateType : uses >
-}
+  class MaintenanceRecord <<aggregate root>> <<entity>> {
+    description : String
+    startDate : Date
+    expectedDuration : int
+    completionDate : Date
+    completionNotes : String
+    maintenanceCost : double
+  }
 
-package "Maintenance Record Aggregate" {
+  enum TemplateType {
+    INSPECTION
+    SCHEDULED_MAINTENANCE
+    OVERHAUL
+    MODIFICATION
+  }
+
   enum ComponentType {
     ENGINE
     AIRFRAME
@@ -208,45 +216,211 @@ package "Maintenance Record Aggregate" {
     EXTERIOR
   }
 
+  enum MaintenanceStatus {
+    SCHEDULED
+    IN_PROGRESS
+    WAITING_PARTS
+    COMPLETED
+    CANCELED
+  }
+
+  MaintenanceTemplate "1" *-- "1" Checklist : defines >
+  MaintenanceTemplate "1" *-- "1" TemplateType : categorized as >
+  MaintenanceRecord "1" --> "1" MaintenanceTemplate : based on >
+  MaintenanceRecord "1" *-- "1" ComponentType : targets >
+  MaintenanceRecord "1" *-- "1" MaintenanceStatus : has status >
+}
+
+AirportAircraftCertification "*" --> "1" AircraftModel : allows >
+Route "*" --> "1" Airport : origin >
+Route "*" --> "1" Airport : destination >
+ScheduledFlight "*" --> "1" Route : follows >
+ScheduledFlight "*" --> "1" Aircraft : operated by >
+MaintenanceTemplate "*" --> "*" AircraftModel : applicable to >
+MaintenanceRecord "*" --> "1" Aircraft : performed on >
+
+@enduml
+  Aircraft "1" *-- "1" AircraftStatus
+}
+
+package "Airport Aggregate" {
+  class Airport <<aggregate root>> <<entity>> {
+    name : String
+    city : String
+    country : String
+    region : String
+    timezone : String
+    operationalHours : LocalTime
+    photos : List<String>
+    operationalStatus : AirportStatus
+  }
+
+  class IATACode <<value object>> {
+    code : String
+  }
+
+  class Coordinates <<value object>> {
+    latitude : double
+    longitude : double
+  }
+
+  class RunwayInfo <<value object>> {
+    name : String
+    length : int
+    orientation : String
+  }
+
+  class FacilityInfo <<value object>> {
+    terminals : int
+    gates : int
+    services : List<String>
+  }
+
+  class ContactInfo <<value object>> {
+    contactType : ContactType
+    value : String
+    department : String
+  }
+
+  class AircraftAirportCertification <<entity>> {
+    certificationCode : String
+    description : String
+    certifiedFrom : Date
+    certifiedUntil : Date
+    notes : String
+  }
+
+  enum AirportStatus {
+    OPERATIONAL
+    CLOSED
+    UNDER_MAINTENANCE
+  }
+
+  enum ContactType {
+    PHONE
+    EMAIL
+    FAX
+    RADIO
+  }
+
+  Airport "1" *-- "1" IATACode
+  Airport "1" *-- "1" Coordinates
+  Airport "1" *-- "1..*" RunwayInfo
+  Airport "1" *-- "1" FacilityInfo
+  Airport "1" *-- "1..*" ContactInfo
+  Airport "1" *-- "1" AirportStatus
+  Airport "1" *-- "0..*" AircraftAirportCertification : certifies >
+  ContactInfo "1" *-- "1" ContactType
+}
+
+package "Route Aggregate" {
+  class Route <<aggregate root>> <<entity>> {
+    isActive : boolean
+  }
+
+  class RouteID <<value object>> {
+    routeId : String
+  }
+
+  class RouteRequirements <<value object>> {
+    minimumRange : int
+    minimumCapacity : int
+    requiredCertificationCode : String
+  }
+
+  class RouteVersion <<entity>> {
+    distance : double
+    estimatedFlightTime : int
+    validFrom : DateTime
+    validUntil : DateTime
+    changeReason : String
+  }
+
+  Route "1" *-- "1" RouteID
+  Route "1" *-- "1" RouteRequirements
+  Route "1" *-- "1..*" RouteVersion : history >
+}
+
+package "Scheduled Flight Aggregate" {
+  class ScheduledFlight <<aggregate root>> <<entity>> {
+    scheduledDeparture : DateTime
+    scheduledArrival : DateTime
+    actualDeparture : DateTime
+    actualArrival : DateTime
+    currentStatus : FlightStatus
+  }
+
+  class FlightNumber <<value object>> {
+    flightNumber : String
+  }
+
+  enum FlightStatus {
+    SCHEDULED
+    DELAYED
+    CANCELED
+    IN_FLIGHT
+    COMPLETED
+  }
+
+  ScheduledFlight "1" *-- "1" FlightNumber
+  ScheduledFlight "1" *-- "1" FlightStatus
+}
+
+package "Maintenance Aggregate" {
+  class MaintenanceTemplate <<entity>> {
+    templateName : String
+    templateType : TemplateType
+  }
+
+  class Checklist <<value object>> {
+    tasks : List<String>
+  }
+
   class MaintenanceRecord <<aggregate root>> <<entity>> {
     description : String
     startDate : Date
     expectedDuration : int
     completionDate : Date
-    maintenanceStatus : MaintenanceStatus
     completionNotes : String
-    maintenanceComponent : ComponentType
     maintenanceCost : double
   }
 
-  enum MaintenanceStatus {
-   SCHEDULED,
-   IN_PROGRESS,
-   WAITING_PARTS,
-   COMPLETED,
-   CANCELED
- }
+  enum TemplateType {
+    INSPECTION
+    SCHEDULED_MAINTENANCE
+    OVERHAUL
+    MODIFICATION
+  }
 
-  MaintenanceRecord "1" *-- "1" ComponentType : uses >
-  MaintenanceRecord "1" *-- "1" MaintenanceStatus : uses >
+  enum ComponentType {
+    ENGINE
+    AIRFRAME
+    AVIONICS
+    INTERIOR
+    EXTERIOR
+  }
+
+  enum MaintenanceStatus {
+    SCHEDULED
+    IN_PROGRESS
+    WAITING_PARTS
+    COMPLETED
+    CANCELED
+  }
+
+  MaintenanceTemplate "1" *-- "1" Checklist
+  MaintenanceTemplate "1" *-- "1" TemplateType
+  MaintenanceRecord "1" --> "1" MaintenanceTemplate : based on >
+  MaintenanceRecord "1" *-- "1" ComponentType
+  MaintenanceRecord "1" *-- "1" MaintenanceStatus
 }
 
-
-' RELAÇÕES GLOBAIS ENTRE AGGREGADOS
-
-AircraftModel "*" --> "1" Manufacturer : built by >
-
-Aircraft "*" --> "1" AircraftModel : is of type >
-Airport "*" --> "*" AircraftModel : certifies >
-
-Route "*" --> "1" Airport : departs from (origin) >
-Route "*" --> "1" Airport : arrives at (destination) >
-
+AircraftAirportCertification "*" --> "1" AircraftModel : allows model >
+Route "*" --> "1" Airport : origin >
+Route "*" --> "1" Airport : destination >
 ScheduledFlight "*" --> "1" Route : follows >
 ScheduledFlight "*" --> "1" Aircraft : operated by >
-
 MaintenanceTemplate "*" --> "*" AircraftModel : applicable to >
 MaintenanceRecord "*" --> "1" Aircraft : performed on >
-MaintenanceRecord "*" --> "1" MaintenanceTemplate : based on >
 
 @enduml

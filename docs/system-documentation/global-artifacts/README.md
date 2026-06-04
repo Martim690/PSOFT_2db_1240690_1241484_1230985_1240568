@@ -3,4 +3,4 @@
 ## 1. [Glossary](Glossary.md)
 
 ## 2. Domain Model
-![Domain Model](svg/DomainModel.svg)
+![Domain Model](./svg/DomainModel.svg)
