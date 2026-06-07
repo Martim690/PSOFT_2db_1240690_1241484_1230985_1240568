@@ -1,0 +1,28 @@
+$kind: http-request
+name: Login BACKOFFICE_OPERATOR
+url: "{{base_url}}/api/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \  \"username\": \"backoffice\",\r
+
+    \  \"password\": \"backoffice123\"\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "var jsonData = pm.response.json();\r
+
+      if (jsonData.token) {\r
+
+      \    pm.collectionVariables.set(\"jwt_token\", jsonData.token);\r
+
+      \    console.log(\"Token saved\");\r
+
+      }"
+    language: text/javascript
+order: 4000

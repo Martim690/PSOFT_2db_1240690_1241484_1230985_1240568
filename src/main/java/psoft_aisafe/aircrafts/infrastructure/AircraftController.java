@@ -40,7 +40,7 @@ public class AircraftController {
     }
 
     @PostMapping
-    @Operation(summary = "Register Aircraft (US101)")
+    @Operation(summary = "Register Aircraft (US102)")
     public ResponseEntity<EntityModel<Aircraft>> registerAircraft(@RequestBody @Valid RegisterAircraftRequest request) {
         Aircraft registeredAircraft = registerAircraftUseCase.execute(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(toModel(registeredAircraft));

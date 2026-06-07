@@ -37,11 +37,6 @@ public class Bootstrap implements CommandLineRunner {
             admin.addRole(Role.ADMIN);
             userRepository.save(admin);
         }
-        if (userRepository.findByUsername("barcodolixo").isEmpty()) {
-            User admin = new User("barcodolixo", passwordEncoder.encode("carrosrapidos123"));
-            admin.addRole(Role.ADMIN);
-            userRepository.save(admin);
-        }
         if (userRepository.findByUsername("backoffice").isEmpty()) {
             User backoffice = new User("backoffice", passwordEncoder.encode("backoffice123"));
             backoffice.addRole(Role.BACKOFFICE_OPERATOR);

@@ -29,7 +29,7 @@ public class AircraftModelController {
     }
 
     @PostMapping
-    @Operation(summary = "Register Aircraft Model (US102)")
+    @Operation(summary = "Register Aircraft Model (US101)")
     public ResponseEntity<EntityModel<AircraftModel>> registerModel(@RequestBody @Valid RegisterAircraftModelRequest request) {
         AircraftModel registeredModel = registerAircraftModelUseCase.execute(request);
         EntityModel<AircraftModel> modelRepresentation = EntityModel.of(registeredModel,

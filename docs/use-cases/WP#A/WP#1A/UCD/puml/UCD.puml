@@ -15,20 +15,20 @@ package "AISafe - WP#1A: Aircraft Management" {
 }
 
 
-BO --> UC101
-Admin --> UC101
+BO -- UC101
+Admin -- UC101
 
-ATCC --> UC102
-Admin --> UC102
+ATCC -- UC102
+Admin -- UC102
 
-ATCC --> UC103
-BO --> UC103
-Admin --> UC103
+ATCC -- UC103
+BO -- UC103
+Admin -- UC103
 
-ATCC --> UC104
-Admin --> UC104
+ATCC -- UC104
+Admin -- UC104
 
-ATCC --> UC105
-Admin --> UC105
+ATCC -- UC105
+Admin -- UC105
 
 @enduml
