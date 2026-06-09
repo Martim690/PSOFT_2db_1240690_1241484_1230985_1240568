@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public record AircraftResponse(
         String registrationNumber,
-        String model, // Alterámos de modelName para model
+        String model, // Tem de ser 'model' para o Postman não dar erro!
         LocalDate manufacturingDate,
         Integer seatingCapacity,
         String currentStatus
