@@ -2,6 +2,7 @@ package psoft_aisafe.aircrafts.application;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import psoft_aisafe.aircrafts.application.dtos.AircraftResponse;
 import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftRequest;
 import psoft_aisafe.aircrafts.domain.*;
 
@@ -17,7 +18,7 @@ public class RegisterAircraftUseCase {
     }
 
     @Transactional
-    public Aircraft execute(RegisterAircraftRequest request) {
+    public AircraftResponse execute(RegisterAircraftRequest request) {
         RegistrationNumber registration = new RegistrationNumber(request.registrationNumber());
 
         if (aircraftRepository.findByRegistrationNumber(registration).isPresent()) {
@@ -35,6 +36,16 @@ public class RegisterAircraftUseCase {
                 request.currentStatus()
         );
 
-        return aircraftRepository.save(newAircraft);
+        // Guarda na BD
+        Aircraft savedAircraft = aircraftRepository.save(newAircraft);
+
+        // Mapeia para o DTO de Saída
+        return new AircraftResponse(
+                savedAircraft.getRegistrationNumber().getNumber(),
+                savedAircraft.getModel().getModelName(),
+                savedAircraft.getManufacturingDate(),
+                savedAircraft.getSeatingCapacity(),
+                savedAircraft.getCurrentStatus().name()
+        );
     }
 }

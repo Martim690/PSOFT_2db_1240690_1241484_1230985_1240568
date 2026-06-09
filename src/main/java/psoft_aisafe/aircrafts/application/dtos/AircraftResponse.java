@@ -4,8 +4,8 @@ import java.time.LocalDate;
 
 public record AircraftResponse(
         String registrationNumber,
-        String modelName,
+        String model, // Alterámos de modelName para model
         LocalDate manufacturingDate,
-        int seatingCapacity,
+        Integer seatingCapacity,
         String currentStatus
 ) {}
