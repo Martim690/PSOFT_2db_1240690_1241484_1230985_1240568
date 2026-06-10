@@ -12,6 +12,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import psoft_aisafe.aircrafts.application.*;
+import psoft_aisafe.aircrafts.application.dtos.AircraftResponse;
 import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftRequest;
 import psoft_aisafe.aircrafts.application.dtos.UpdateAircraftStatusRequest;
 import psoft_aisafe.aircrafts.domain.*;
@@ -55,18 +56,31 @@ class AircraftControllerTest {
     @MockitoBean
     private UserRepository userRepository;
 
+    // Mantemos a Entidade para os Casos de Uso de Registo e Update
     private Aircraft mockAircraft;
+
+    // Mantemos o DTO para os Casos de Uso de Consulta/Get
+    private AircraftResponse mockAircraftResponse;
 
     @BeforeEach
     void setUp() {
         AircraftModel model = new AircraftModel("A320", 20000, 5000, 800, AircraftManufacturer.AIRBUS);
         mockAircraft = new Aircraft(new RegistrationNumber("CS-TPA"), model, LocalDate.now(), 150, AircraftStatus.AVAILABLE);
+
+        mockAircraftResponse = new AircraftResponse(
+                "CS-TPA",
+                "A320",
+                LocalDate.now(),
+                150,
+                AircraftStatus.AVAILABLE.name()
+        );
     }
 
     @Test
     void ensureRegisterAircraftReturns201Created() throws Exception {
         RegisterAircraftRequest request = new RegisterAircraftRequest("CS-TPA", "A320", LocalDate.now(), 150, AircraftStatus.AVAILABLE);
 
+        // O Caso de Uso de registo continua a devolver a Entidade Aircraft original
         when(registerAircraftUseCase.execute(any())).thenReturn(mockAircraft);
 
         mockMvc.perform(post("/api/aircrafts")
@@ -78,17 +92,19 @@ class AircraftControllerTest {
 
     @Test
     void ensureGetAircraftByRegistrationReturns200OK() throws Exception {
-        when(getAircraftByRegistrationUseCase.execute("CS-TPA")).thenReturn(mockAircraft);
+        // O Caso de Uso de Get agora devolve o DTO AircraftResponse
+        when(getAircraftByRegistrationUseCase.execute("CS-TPA")).thenReturn(mockAircraftResponse);
 
         mockMvc.perform(get("/api/aircrafts/CS-TPA"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.registrationNumber.number").value("CS-TPA"));
+                .andExpect(jsonPath("$.registrationNumber").value("CS-TPA")); // Caminho direto no DTO Record
     }
 
     @Test
     void ensureUpdateStatusWithIfMatchHeaderReturns200OK() throws Exception {
         UpdateAircraftStatusRequest request = new UpdateAircraftStatusRequest(AircraftStatus.INACTIVE);
 
+        // O Caso de Uso de update continua a devolver a Entidade Aircraft original
         when(updateAircraftStatusUseCase.execute(any(), any())).thenReturn(mockAircraft);
 
         mockMvc.perform(patch("/api/aircrafts/CS-TPA/status")

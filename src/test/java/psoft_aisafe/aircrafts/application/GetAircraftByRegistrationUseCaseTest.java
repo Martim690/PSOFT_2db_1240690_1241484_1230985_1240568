@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import psoft_aisafe.aircrafts.application.dtos.AircraftResponse;
 import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftModelRequest;
 import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftRequest;
 import psoft_aisafe.aircrafts.domain.*;
@@ -25,10 +26,10 @@ class GetAircraftByRegistrationUseCaseTest {
         registerModelUseCase.execute(new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 20000, 5000, 800));
         registerAircraftUseCase.execute(new RegisterAircraftRequest("CS-GET1", "B737", LocalDate.now(), 180, AircraftStatus.AVAILABLE));
 
-        Aircraft result = getUseCase.execute("CS-GET1");
+        AircraftResponse result = getUseCase.execute("CS-GET1");
 
         assertNotNull(result);
-        assertEquals("CS-GET1", result.getRegistrationNumber().getNumber());
+        assertEquals("CS-GET1", result.registrationNumber());
     }
 
     @Test

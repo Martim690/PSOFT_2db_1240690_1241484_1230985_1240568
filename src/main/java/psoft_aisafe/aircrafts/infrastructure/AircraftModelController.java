@@ -1,6 +1,7 @@
 package psoft_aisafe.aircrafts.infrastructure;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import psoft_aisafe.aircrafts.application.ListAircraftModelsUseCase;
 import psoft_aisafe.aircrafts.application.RegisterAircraftModelUseCase;
 import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftModelRequest;
+import psoft_aisafe.aircrafts.application.dtos.AircraftModelResponse;
 import psoft_aisafe.aircrafts.domain.AircraftModel;
 
 import java.util.List;
@@ -30,6 +32,7 @@ public class AircraftModelController {
 
     @PostMapping
     @Operation(summary = "Register Aircraft Model (US101)")
+    @ApiResponse(responseCode = "201", description = "CREATED")
     public ResponseEntity<EntityModel<AircraftModel>> registerModel(@RequestBody @Valid RegisterAircraftModelRequest request) {
         AircraftModel registeredModel = registerAircraftModelUseCase.execute(request);
         EntityModel<AircraftModel> modelRepresentation = EntityModel.of(registeredModel,
@@ -39,9 +42,10 @@ public class AircraftModelController {
 
     @GetMapping
     @Operation(summary = "List of Aircraft Models")
-    public ResponseEntity<CollectionModel<EntityModel<AircraftModel>>> listModels() {
-        List<AircraftModel> models = listAircraftModelsUseCase.execute();
-        List<EntityModel<AircraftModel>> modelRepresentations = models.stream()
+    public ResponseEntity<CollectionModel<EntityModel<AircraftModelResponse>>> listModels() {
+        List<AircraftModelResponse> models = listAircraftModelsUseCase.execute();
+
+        List<EntityModel<AircraftModelResponse>> modelRepresentations = models.stream()
                 .map(m -> EntityModel.of(m, linkTo(methodOn(AircraftModelController.class).listModels()).withSelfRel()))
                 .toList();
 
