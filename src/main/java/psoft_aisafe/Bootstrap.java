@@ -4,6 +4,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import psoft_aisafe.aircrafts.domain.*;
+import psoft_aisafe.routes.domain.Route;
+import psoft_aisafe.routes.domain.RouteRequirements;
+import psoft_aisafe.routes.domain.RouteRepository;
 import psoft_aisafe.security.domain.Role;
 import psoft_aisafe.security.domain.User;
 import psoft_aisafe.security.domain.UserRepository;
@@ -18,15 +21,18 @@ public class Bootstrap implements CommandLineRunner {
 
     private final AircraftModelRepository aircraftModelRepository;
     private final AircraftRepository aircraftRepository;
+    private final RouteRepository routeRepository;
 
     public Bootstrap(UserRepository userRepository,
                      PasswordEncoder passwordEncoder,
                      AircraftModelRepository aircraftModelRepository,
-                     AircraftRepository aircraftRepository) {
+                     AircraftRepository aircraftRepository,
+                     RouteRepository routeRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.aircraftModelRepository = aircraftModelRepository;
         this.aircraftRepository = aircraftRepository;
+        this.routeRepository = routeRepository;
     }
 
     @Override
@@ -67,6 +73,25 @@ public class Bootstrap implements CommandLineRunner {
         RegistrationNumber reg3 = new RegistrationNumber("CS-AVA");
         if (aircraftRepository.findByRegistrationNumber(reg3).isEmpty()) {
             aircraftRepository.save(new Aircraft(reg3, airbusA320, LocalDate.of(2022, 1, 10), 174, AircraftStatus.UNDER_MAINTENANCE));
+        }
+        // 4. Routes Bootstrapping (Para habilitar US203 e relatórios)
+        // Rota Curta: Lisboa -> Porto (Compatível com todos)
+        if (!routeRepository.existsActiveRouteBetween("LIS", "OPO")) {
+            RouteRequirements reqShort = new RouteRequirements(400, 50, "CAT1");
+            routeRepository.save(new Route("LIS", "OPO", reqShort, 300.0, 50));
+        }
+
+        // Rota Média: Lisboa -> Paris CDG (Compatível com todos)
+        if (!routeRepository.existsActiveRouteBetween("LIS", "CDG")) {
+            RouteRequirements reqMedium = new RouteRequirements(2000, 120, "CAT2");
+            routeRepository.save(new Route("LIS", "CDG", reqMedium, 1700.0, 150));
+        }
+
+        // Rota de Longo Curso Exigente: Lisboa -> New York JFK
+        // (A320neo tem range 6300km (OK), mas o B737-800 tem 5436km (Incompatível se a distância real exigir mais alcance ou margem))
+        if (!routeRepository.existsActiveRouteBetween("LIS", "JFK")) {
+            RouteRequirements reqLong = new RouteRequirements(5600, 150, "CAT3");
+            routeRepository.save(new Route("LIS", "JFK", reqLong, 5400.0, 480));
         }
     }
 }

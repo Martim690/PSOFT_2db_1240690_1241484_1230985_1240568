@@ -49,4 +49,19 @@ public class AircraftModel {
         this.cruisingSpeed = cruisingSpeed;
         this.manufacturer = manufacturer;
     }
+    public void updateSpecifications(int fuelCapacity, int maximumRange, int cruisingSpeed) {
+        if (fuelCapacity <= 0) {
+            throw new IllegalArgumentException("Fuel capacity must be greater than zero.");
+        }
+        if (maximumRange <= 0) {
+            throw new IllegalArgumentException("Maximum range must be greater than zero.");
+        }
+        if (cruisingSpeed <= 0) {
+            throw new IllegalArgumentException("Cruising speed must be greater than zero.");
+        }
+
+        this.fuelCapacity = fuelCapacity;
+        this.maximumRange = maximumRange;
+        this.cruisingSpeed = cruisingSpeed;
+    }
 }

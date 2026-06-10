@@ -12,8 +12,10 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import psoft_aisafe.aircrafts.application.ListAircraftModelsUseCase;
 import psoft_aisafe.aircrafts.application.RegisterAircraftModelUseCase;
+import psoft_aisafe.aircrafts.application.UpdateAircraftModelSpecsUseCase;
 import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftModelRequest;
 import psoft_aisafe.aircrafts.application.dtos.AircraftModelResponse;
+import psoft_aisafe.aircrafts.application.dtos.UpdateAircraftModelSpecsRequest;
 import psoft_aisafe.aircrafts.domain.AircraftModel;
 
 import java.util.List;
@@ -24,10 +26,12 @@ public class AircraftModelController {
 
     private final RegisterAircraftModelUseCase registerAircraftModelUseCase;
     private final ListAircraftModelsUseCase listAircraftModelsUseCase;
+    private final UpdateAircraftModelSpecsUseCase updateAircraftModelSpecsUseCase;
 
-    public AircraftModelController(RegisterAircraftModelUseCase registerAircraftModelUseCase,  ListAircraftModelsUseCase listAircraftModelsUseCase) {
+    public AircraftModelController(RegisterAircraftModelUseCase registerAircraftModelUseCase,  ListAircraftModelsUseCase listAircraftModelsUseCase, UpdateAircraftModelSpecsUseCase updateAircraftModelSpecsUseCase) {
         this.registerAircraftModelUseCase = registerAircraftModelUseCase;
         this.listAircraftModelsUseCase = listAircraftModelsUseCase;
+        this.updateAircraftModelSpecsUseCase = updateAircraftModelSpecsUseCase;
     }
 
     @PostMapping
@@ -51,5 +55,20 @@ public class AircraftModelController {
 
         return ResponseEntity.ok(CollectionModel.of(modelRepresentations,
                 linkTo(methodOn(AircraftModelController.class).listModels()).withSelfRel()));
+    }
+    @PatchMapping("/{modelName}")
+    @Operation(summary = "Update Aircraft Model Specifications (US201)")
+    public ResponseEntity<EntityModel<AircraftModel>> updateSpecs(
+            @PathVariable String modelName,
+            @RequestBody @Valid UpdateAircraftModelSpecsRequest request) {
+
+        AircraftModel updatedModel = updateAircraftModelSpecsUseCase.execute(modelName, request);
+
+        // Retorna o DTO com o corpo completo e atualizado
+        EntityModel<AircraftModel> modelRepresentation = EntityModel.of(updatedModel,
+                linkTo(methodOn(AircraftModelController.class).updateSpecs(modelName, null)).withSelfRel(),
+                linkTo(methodOn(AircraftModelController.class).listModels()).withRel("all-models"));
+
+        return ResponseEntity.ok(modelRepresentation);
     }
 }
