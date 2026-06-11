@@ -5,5 +5,6 @@ public record AircraftModelResponse(
         String manufacturer,
         int fuelCapacity,
         int maximumRange,
-        int cruisingSpeed
+        int cruisingSpeed,
+        String technicalDiagramUrl
 ) {}

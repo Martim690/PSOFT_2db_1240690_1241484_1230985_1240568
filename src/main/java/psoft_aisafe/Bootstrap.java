@@ -54,25 +54,29 @@ public class Bootstrap implements CommandLineRunner {
             userRepository.save(atcc);
         }
 //Aircraft Model
-        AircraftModel boeing737 = aircraftModelRepository.findByModelName("B737-800")
-                .orElseGet(() -> aircraftModelRepository.save(new AircraftModel("B737-800", 26020, 5436, 842, AircraftManufacturer.BOEING)));
+        AircraftModel airbusA350 = aircraftModelRepository.findByModelName("A350-900")
+                .orElseGet(() -> aircraftModelRepository.save(new AircraftModel("A350-900", 141000, 15000, 903, AircraftManufacturer.AIRBUS, "http://localhost:8080/diagrams/a350-900.png")));
 
-        AircraftModel airbusA320 = aircraftModelRepository.findByModelName("A320neo")
-                .orElseGet(() -> aircraftModelRepository.save(new AircraftModel("A320neo", 26730, 6300, 833, AircraftManufacturer.AIRBUS)));
+        AircraftModel boeing787 = aircraftModelRepository.findByModelName("B787-9")
+                .orElseGet(() -> aircraftModelRepository.save(new AircraftModel("B787-9", 126220, 14140, 903, AircraftManufacturer.BOEING, "http://localhost:8080/diagrams/b787-9.png")));
+
+        AircraftModel embraerE195 = aircraftModelRepository.findByModelName("E195-E2")
+                .orElseGet(() -> aircraftModelRepository.save(new AircraftModel("E195-E2", 13690, 4815, 870, AircraftManufacturer.EMBRAER, "http://localhost:8080/diagrams/e195-e2.png")));
+
 //Aircraft
-        RegistrationNumber reg1 = new RegistrationNumber("CS-TPA");
-        if (aircraftRepository.findByRegistrationNumber(reg1).isEmpty()) {
-            aircraftRepository.save(new Aircraft(reg1, boeing737, LocalDate.of(2018, 5, 20), 180, AircraftStatus.AVAILABLE));
+        RegistrationNumber regA350 = new RegistrationNumber("CS-TXA");
+        if (aircraftRepository.findByRegistrationNumber(regA350).isEmpty()) {
+            aircraftRepository.save(new Aircraft(regA350, airbusA350, LocalDate.of(2021, 3, 15), 300, AircraftStatus.AVAILABLE));
         }
 
-        RegistrationNumber reg2 = new RegistrationNumber("CS-TQB");
-        if (aircraftRepository.findByRegistrationNumber(reg2).isEmpty()) {
-            aircraftRepository.save(new Aircraft(reg2, boeing737, LocalDate.of(2020, 11, 15), 180, AircraftStatus.IN_FLIGHT));
+        RegistrationNumber regB787 = new RegistrationNumber("CS-TZE");
+        if (aircraftRepository.findByRegistrationNumber(regB787).isEmpty()) {
+            aircraftRepository.save(new Aircraft(regB787, boeing787, LocalDate.of(2019, 8, 24), 290, AircraftStatus.IN_FLIGHT));
         }
 
-        RegistrationNumber reg3 = new RegistrationNumber("CS-AVA");
-        if (aircraftRepository.findByRegistrationNumber(reg3).isEmpty()) {
-            aircraftRepository.save(new Aircraft(reg3, airbusA320, LocalDate.of(2022, 1, 10), 174, AircraftStatus.UNDER_MAINTENANCE));
+        RegistrationNumber regE195 = new RegistrationNumber("CS-TTY");
+        if (aircraftRepository.findByRegistrationNumber(regE195).isEmpty()) {
+            aircraftRepository.save(new Aircraft(regE195, embraerE195, LocalDate.of(2023, 5, 10), 136, AircraftStatus.AVAILABLE));
         }
         // 4. Routes Bootstrapping (Para habilitar US203 e relatórios)
         // Rota Curta: Lisboa -> Porto (Compatível com todos)

@@ -20,13 +20,16 @@ public class AircraftModel {
     private int maximumRange;
     private int cruisingSpeed;
 
+    // US202: Campo opcional para guardar a imagem ou diagrama técnico
+    private String technicalDiagramUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AircraftManufacturer manufacturer;
 
     protected AircraftModel() {}
 
-    public AircraftModel(String modelName, int fuelCapacity, int maximumRange, int cruisingSpeed, AircraftManufacturer manufacturer) {
+    public AircraftModel(String modelName, int fuelCapacity, int maximumRange, int cruisingSpeed, AircraftManufacturer manufacturer, String technicalDiagramUrl) {
         if (modelName == null || modelName.trim().isEmpty()) {
             throw new IllegalArgumentException("Model name cannot be empty.");
         }
@@ -48,7 +51,13 @@ public class AircraftModel {
         this.maximumRange = maximumRange;
         this.cruisingSpeed = cruisingSpeed;
         this.manufacturer = manufacturer;
+        this.technicalDiagramUrl = technicalDiagramUrl;
     }
+
+    public AircraftModel(String modelName, int fuelCapacity, int maximumRange, int cruisingSpeed, AircraftManufacturer manufacturer) {
+        this(modelName, fuelCapacity, maximumRange, cruisingSpeed, manufacturer, null);
+    }
+
     public void updateSpecifications(int fuelCapacity, int maximumRange, int cruisingSpeed) {
         if (fuelCapacity <= 0) {
             throw new IllegalArgumentException("Fuel capacity must be greater than zero.");

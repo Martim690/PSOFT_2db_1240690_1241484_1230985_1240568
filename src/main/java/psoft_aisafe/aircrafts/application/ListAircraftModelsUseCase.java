@@ -18,13 +18,22 @@ public class ListAircraftModelsUseCase {
     public List<AircraftModelResponse> execute() {
         return modelRepository.findAll()
                 .stream()
-                .map(model -> new AircraftModelResponse(
-                        model.getModelName(),
-                        model.getManufacturer().name(),
-                        model.getFuelCapacity(),
-                        model.getMaximumRange(),
-                        model.getCruisingSpeed()
-                ))
+                .map(model -> {
+                    // Validação para manter a consistência: se não houver diagrama, devolve "empty"
+                    String diagram = model.getTechnicalDiagramUrl();
+                    if (diagram == null || diagram.trim().isEmpty()) {
+                        diagram = "empty";
+                    }
+
+                    return new AircraftModelResponse(
+                            model.getModelName(),
+                            model.getManufacturer().name(),
+                            model.getFuelCapacity(),
+                            model.getMaximumRange(),
+                            model.getCruisingSpeed(),
+                            diagram
+                    );
+                })
                 .toList();
     }
 }

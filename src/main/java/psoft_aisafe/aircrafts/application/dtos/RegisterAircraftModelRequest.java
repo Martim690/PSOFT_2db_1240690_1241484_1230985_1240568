@@ -18,5 +18,7 @@ public record RegisterAircraftModelRequest(
         int maximumRange,
 
         @Min(value = 1, message = "Cruising speed must be a positive number.")
-        int cruisingSpeed
+        int cruisingSpeed,
+
+        String technicalDiagramUrl
 ) {}

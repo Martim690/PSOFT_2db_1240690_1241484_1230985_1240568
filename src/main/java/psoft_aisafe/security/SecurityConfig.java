@@ -32,6 +32,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/diagrams/**").permitAll()
                         //WP #1A
                         .requestMatchers(HttpMethod.POST, "/api/aircraft-models").hasAnyAuthority("BACKOFFICE_OPERATOR", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/aircrafts").hasAnyAuthority("ATCC", "ADMIN")

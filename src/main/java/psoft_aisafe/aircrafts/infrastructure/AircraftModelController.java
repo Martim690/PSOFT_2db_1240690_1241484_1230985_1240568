@@ -35,11 +35,11 @@ public class AircraftModelController {
     }
 
     @PostMapping
-    @Operation(summary = "Register Aircraft Model (US101)")
+    @Operation(summary = "Register Aircraft Model (US101 / US202)")
     @ApiResponse(responseCode = "201", description = "CREATED")
-    public ResponseEntity<EntityModel<AircraftModel>> registerModel(@RequestBody @Valid RegisterAircraftModelRequest request) {
-        AircraftModel registeredModel = registerAircraftModelUseCase.execute(request);
-        EntityModel<AircraftModel> modelRepresentation = EntityModel.of(registeredModel,
+    public ResponseEntity<EntityModel<AircraftModelResponse>> registerModel(@RequestBody @Valid RegisterAircraftModelRequest request) {
+        AircraftModelResponse registeredModel = registerAircraftModelUseCase.execute(request);
+        EntityModel<AircraftModelResponse> modelRepresentation = EntityModel.of(registeredModel,
                 linkTo(methodOn(AircraftModelController.class).listModels()).withRel("all-models"));
         return ResponseEntity.status(HttpStatus.CREATED).body(modelRepresentation);
     }
@@ -56,6 +56,7 @@ public class AircraftModelController {
         return ResponseEntity.ok(CollectionModel.of(modelRepresentations,
                 linkTo(methodOn(AircraftModelController.class).listModels()).withSelfRel()));
     }
+
     @PatchMapping("/{modelName}")
     @Operation(summary = "Update Aircraft Model Specifications (US201)")
     public ResponseEntity<EntityModel<AircraftModel>> updateSpecs(
@@ -64,7 +65,6 @@ public class AircraftModelController {
 
         AircraftModel updatedModel = updateAircraftModelSpecsUseCase.execute(modelName, request);
 
-        // Retorna o DTO com o corpo completo e atualizado
         EntityModel<AircraftModel> modelRepresentation = EntityModel.of(updatedModel,
                 linkTo(methodOn(AircraftModelController.class).updateSpecs(modelName, null)).withSelfRel(),
                 linkTo(methodOn(AircraftModelController.class).listModels()).withRel("all-models"));
