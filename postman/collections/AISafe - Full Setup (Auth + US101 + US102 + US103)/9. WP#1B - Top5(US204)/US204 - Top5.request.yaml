@@ -1,0 +1,95 @@
+$kind: http-request
+url: http://localhost:8080/api/aircraft-models/top-utilized?sortBy=hours
+method: GET
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{jwt_token}}
+queryParams:
+  sortBy: hours
+scripts:
+  - type: afterResponse
+    code: "// 1. Validar que o código de estado HTTP é 200 OK\r
+
+      pm.test(\"Status code is 200 OK\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      // 2. Validar que a resposta é um JSON válido\r
+
+      pm.test(\"Response is a valid JSON\", function () {\r
+
+      \    pm.response.to.be.withBody;\r
+
+      \    pm.response.to.be.json;\r
+
+      });\r
+
+      \r
+
+      // 3. Validar a presença dos links estruturais do HATEOAS\r
+
+      pm.test(\"Response contains valid HATEOAS links\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    pm.expect(jsonData).to.have.property(\"_links\");\r
+
+      \    pm.expect(jsonData._links).to.have.property(\"self\");\r
+
+      });\r
+
+      \r
+
+      // 4. Validar as regras de negócio e estrutura do Top 5\r
+
+      pm.test(\"Top 5 list is present and structured correctly\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    \r
+
+      \    // Verifica se os dados agrupados estão presentes\r
+
+      \    pm.expect(jsonData).to.have.property(\"_embedded\");\r
+
+      \    \r
+
+      \    // O HATEOAS do Spring nomeia a lista com base no DTO (topUtilizedModelResponseList)\r
+
+      \    var topModels = jsonData._embedded.topUtilizedModelResponseList;\r
+
+      \    pm.expect(topModels).to.be.an('array');\r
+
+      \    \r
+
+      \    // REGRA DE NEGÓCIO DA US204: O tamanho máximo da lista tem de ser 5\r
+
+      \    pm.expect(topModels.length).to.be.at.most(5);\r
+
+      \    \r
+
+      \    // Se a base de dados tiver modelos, valida a estrutura do primeiro item\r
+
+      \    if (topModels.length > 0) {\r
+
+      \        var firstItem = topModels[0];\r
+
+      \        \r
+
+      \        pm.expect(firstItem).to.have.property(\"modelName\");\r
+
+      \        pm.expect(firstItem).to.have.property(\"manufacturer\");\r
+
+      \        pm.expect(firstItem).to.have.property(\"totalFlightHours\").that.is.a(\"number\");\r
+
+      \        pm.expect(firstItem).to.have.property(\"totalAssignments\").that.is.a(\"number\");\r
+
+      \    }\r
+
+      });"
+    language: text/javascript
+order: 1781316214660

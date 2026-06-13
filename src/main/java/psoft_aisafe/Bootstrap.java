@@ -66,17 +66,20 @@ public class Bootstrap implements CommandLineRunner {
 //Aircraft
         RegistrationNumber regA350 = new RegistrationNumber("CS-TXA");
         if (aircraftRepository.findByRegistrationNumber(regA350).isEmpty()) {
-            aircraftRepository.save(new Aircraft(regA350, airbusA350, LocalDate.of(2021, 3, 15), 300, AircraftStatus.AVAILABLE));
+            // Adicionado: 4500 horas, 300 tarefas no final
+            aircraftRepository.save(new Aircraft(regA350, airbusA350, LocalDate.of(2021, 3, 15), 300, AircraftStatus.AVAILABLE, 4500, 300));
         }
 
         RegistrationNumber regB787 = new RegistrationNumber("CS-TZE");
         if (aircraftRepository.findByRegistrationNumber(regB787).isEmpty()) {
-            aircraftRepository.save(new Aircraft(regB787, boeing787, LocalDate.of(2019, 8, 24), 290, AircraftStatus.IN_FLIGHT));
+            // Adicionado: 3200 horas, 220 tarefas no final
+            aircraftRepository.save(new Aircraft(regB787, boeing787, LocalDate.of(2019, 8, 24), 290, AircraftStatus.IN_FLIGHT, 3200, 220));
         }
 
         RegistrationNumber regE195 = new RegistrationNumber("CS-TTY");
         if (aircraftRepository.findByRegistrationNumber(regE195).isEmpty()) {
-            aircraftRepository.save(new Aircraft(regE195, embraerE195, LocalDate.of(2023, 5, 10), 136, AircraftStatus.AVAILABLE));
+            // Adicionado: 600 horas, 210 tarefas no final
+            aircraftRepository.save(new Aircraft(regE195, embraerE195, LocalDate.of(2023, 5, 10), 136, AircraftStatus.AVAILABLE, 600, 210));
         }
         // 4. Routes Bootstrapping (Para habilitar US203 e relatórios)
         // Rota Curta: Lisboa -> Porto (Compatível com todos)

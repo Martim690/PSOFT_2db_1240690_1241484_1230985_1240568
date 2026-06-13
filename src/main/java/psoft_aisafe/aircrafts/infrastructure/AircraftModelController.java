@@ -13,9 +13,11 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import psoft_aisafe.aircrafts.application.ListAircraftModelsUseCase;
 import psoft_aisafe.aircrafts.application.RegisterAircraftModelUseCase;
 import psoft_aisafe.aircrafts.application.UpdateAircraftModelSpecsUseCase;
+import psoft_aisafe.aircrafts.application.GetTopUtilizedModelsUseCase;
 import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftModelRequest;
 import psoft_aisafe.aircrafts.application.dtos.AircraftModelResponse;
 import psoft_aisafe.aircrafts.application.dtos.UpdateAircraftModelSpecsRequest;
+import psoft_aisafe.aircrafts.application.dtos.TopUtilizedModelResponse;
 import psoft_aisafe.aircrafts.domain.AircraftModel;
 
 import java.util.List;
@@ -27,11 +29,13 @@ public class AircraftModelController {
     private final RegisterAircraftModelUseCase registerAircraftModelUseCase;
     private final ListAircraftModelsUseCase listAircraftModelsUseCase;
     private final UpdateAircraftModelSpecsUseCase updateAircraftModelSpecsUseCase;
+    private final GetTopUtilizedModelsUseCase getTopUtilizedModelsUseCase;
 
-    public AircraftModelController(RegisterAircraftModelUseCase registerAircraftModelUseCase,  ListAircraftModelsUseCase listAircraftModelsUseCase, UpdateAircraftModelSpecsUseCase updateAircraftModelSpecsUseCase) {
+    public AircraftModelController(RegisterAircraftModelUseCase registerAircraftModelUseCase, ListAircraftModelsUseCase listAircraftModelsUseCase, UpdateAircraftModelSpecsUseCase updateAircraftModelSpecsUseCase, GetTopUtilizedModelsUseCase getTopUtilizedModelsUseCase) {
         this.registerAircraftModelUseCase = registerAircraftModelUseCase;
         this.listAircraftModelsUseCase = listAircraftModelsUseCase;
         this.updateAircraftModelSpecsUseCase = updateAircraftModelSpecsUseCase;
+        this.getTopUtilizedModelsUseCase = getTopUtilizedModelsUseCase;
     }
 
     @PostMapping
@@ -70,5 +74,20 @@ public class AircraftModelController {
                 linkTo(methodOn(AircraftModelController.class).listModels()).withRel("all-models"));
 
         return ResponseEntity.ok(modelRepresentation);
+    }
+
+    @GetMapping("/top-utilized")
+    @Operation(summary = "View Top 5 most utilized aircraft models (US204)")
+    public ResponseEntity<CollectionModel<EntityModel<TopUtilizedModelResponse>>> getTopUtilizedModels(
+            @RequestParam(required = false, defaultValue = "hours") String sortBy) {
+
+        List<TopUtilizedModelResponse> topModels = getTopUtilizedModelsUseCase.execute(sortBy);
+
+        List<EntityModel<TopUtilizedModelResponse>> modelRepresentations = topModels.stream()
+                .map(m -> EntityModel.of(m, linkTo(methodOn(AircraftModelController.class).getTopUtilizedModels(sortBy)).withSelfRel()))
+                .toList();
+
+        return ResponseEntity.ok(CollectionModel.of(modelRepresentations,
+                linkTo(methodOn(AircraftModelController.class).getTopUtilizedModels(sortBy)).withSelfRel()));
     }
 }
