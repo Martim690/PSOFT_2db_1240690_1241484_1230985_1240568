@@ -16,10 +16,12 @@ import psoft_aisafe.aircrafts.application.RegisterAircraftUseCase;
 import psoft_aisafe.aircrafts.application.SearchAircraftsUseCase;
 import psoft_aisafe.aircrafts.application.UpdateAircraftStatusUseCase;
 import psoft_aisafe.aircrafts.application.GetCompatibleRoutesUseCase;
+import psoft_aisafe.aircrafts.application.GetFleetStatusUseCase;
 import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftRequest;
 import psoft_aisafe.aircrafts.application.dtos.UpdateAircraftStatusRequest;
 import psoft_aisafe.aircrafts.application.dtos.AircraftResponse;
 import psoft_aisafe.aircrafts.application.dtos.CompatibleRouteResponse;
+import psoft_aisafe.aircrafts.application.dtos.FleetStatusResponse;
 import psoft_aisafe.aircrafts.domain.Aircraft;
 import psoft_aisafe.aircrafts.domain.AircraftStatus;
 
@@ -35,14 +37,16 @@ public class AircraftController {
     private final GetAircraftByRegistrationUseCase getAircraftByRegistrationUseCase;
     private final UpdateAircraftStatusUseCase updateAircraftStatusUseCase;
     private final GetCompatibleRoutesUseCase getCompatibleRoutesUseCase;
+    private final GetFleetStatusUseCase getFleetStatusUseCase;
 
-    public AircraftController(RegisterAircraftUseCase registerAircraftUseCase, ListAircraftsUseCase listAircraftsUseCase, SearchAircraftsUseCase searchAircraftsUseCase, GetAircraftByRegistrationUseCase getAircraftByRegistrationUseCase, UpdateAircraftStatusUseCase updateAircraftStatusUseCase, GetCompatibleRoutesUseCase getCompatibleRoutesUseCase) {
+    public AircraftController(RegisterAircraftUseCase registerAircraftUseCase, ListAircraftsUseCase listAircraftsUseCase, GetAircraftByRegistrationUseCase getAircraftByRegistrationUseCase, UpdateAircraftStatusUseCase updateAircraftStatusUseCase, SearchAircraftsUseCase searchAircraftsUseCase, GetCompatibleRoutesUseCase getCompatibleRoutesUseCase, GetFleetStatusUseCase getFleetStatusUseCase) {
         this.registerAircraftUseCase = registerAircraftUseCase;
         this.listAircraftsUseCase = listAircraftsUseCase;
         this.searchAircraftsUseCase = searchAircraftsUseCase;
         this.getAircraftByRegistrationUseCase = getAircraftByRegistrationUseCase;
         this.updateAircraftStatusUseCase = updateAircraftStatusUseCase;
         this.getCompatibleRoutesUseCase = getCompatibleRoutesUseCase;
+        this.getFleetStatusUseCase = getFleetStatusUseCase;
     }
 
     @PostMapping
@@ -119,6 +123,20 @@ public class AircraftController {
                 linkTo(methodOn(AircraftController.class).updateAircraftStatus(reg, null)).withRel("update-status"),
                 linkTo(methodOn(AircraftController.class).listAircrafts()).withRel("all-aircrafts")
         );
+    }
+
+    @GetMapping("/fleet-status")
+    @Operation(summary = "Get Fleet Status Report Dashboard (US205)")
+    public ResponseEntity<EntityModel<FleetStatusResponse>> getFleetStatus() {
+
+        FleetStatusResponse report = getFleetStatusUseCase.execute();
+
+        // Adiciona links HATEOAS para navegação
+        EntityModel<FleetStatusResponse> modelRepresentation = EntityModel.of(report,
+                linkTo(methodOn(AircraftController.class).getFleetStatus()).withSelfRel(),
+                linkTo(methodOn(AircraftController.class).listAircrafts()).withRel("all-aircrafts"));
+
+        return ResponseEntity.ok(modelRepresentation);
     }
 
     @PatchMapping("/{registrationNumber}")

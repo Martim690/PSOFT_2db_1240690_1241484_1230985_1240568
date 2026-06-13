@@ -1,11 +1,15 @@
 $kind: http-request
-url: http://localhost:8080/api/aircraft-models/top-utilized?sortBy=hours
+name: US204 - Top5
+url: "{{base_url}}/api/aircraft-models/top-utilized?sortBy=hours&sortBy=assignments"
 method: GET
 headers:
   Content-Type: application/json
   Authorization: Bearer {{jwt_token}}
 queryParams:
-  sortBy: hours
+  - key: sortBy
+    value: hours
+  - key: sortBy
+    value: assignments
 scripts:
   - type: afterResponse
     code: "// 1. Validar que o código de estado HTTP é 200 OK\r
