@@ -1,0 +1,49 @@
+@startuml
+autonumber
+actor "ATCC/Admin" as ATCC
+participant "AircraftController" as Ctrl
+participant "GetCompatibleRoutesUseCase" as UC
+participant "AircraftRepository" as AcftRepo
+participant "RouteRepository" as RouteRepo
+database "Database" as DB
+
+ATCC -> Ctrl : GET /api/aircrafts/{registrationNumber}/compatible-routes
+activate Ctrl
+
+Ctrl -> UC : execute(registrationNumber)
+activate UC
+
+' Fetch Aircraft
+UC -> AcftRepo : findByRegistrationNumber(registrationNumber)
+activate AcftRepo
+
+AcftRepo -> DB : SELECT * FROM aircrafts a JOIN models m...
+activate DB
+DB --> AcftRepo : aircraft record
+deactivate DB
+
+AcftRepo --> UC : aircraft (Entity)
+deactivate AcftRepo
+
+' Fetch Routes
+UC -> RouteRepo : findAll()
+activate RouteRepo
+
+RouteRepo -> DB : SELECT * FROM routes
+activate DB
+DB --> RouteRepo : routes list
+deactivate DB
+
+RouteRepo --> UC : List<Route>
+deactivate RouteRepo
+
+' Filter Logic
+note right of UC: Filters routes:\n- route.distance <= aircraft.model.maximumRange\n- route.minCapacity <= aircraft.seatingCapacity
+
+' Mapping and Return
+UC --> Ctrl : List<CompatibleRouteResponse>
+deactivate UC
+
+Ctrl --> ATCC : 200 OK (JSON Collection)
+deactivate Ctrl
+@enduml

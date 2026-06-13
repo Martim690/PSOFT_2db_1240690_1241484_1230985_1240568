@@ -105,7 +105,7 @@ public class AircraftController {
     }
 
     @GetMapping("/{registrationNumber}/compatible-routes")
-    @Operation(summary = "View active routes compatible with a specific aircraft (US203)")
+    @Operation(summary = "View active routes compatible with a specific aircraft (US203.md)")
     public ResponseEntity<CollectionModel<EntityModel<CompatibleRouteResponse>>> getCompatibleRoutes(@PathVariable String registrationNumber) {
 
         List<CompatibleRouteResponse> compatibleRoutes = getCompatibleRoutesUseCase.execute(registrationNumber);

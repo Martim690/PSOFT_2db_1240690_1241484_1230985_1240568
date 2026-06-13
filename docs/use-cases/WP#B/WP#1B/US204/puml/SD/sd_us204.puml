@@ -1,0 +1,35 @@
+@startuml
+autonumber
+actor "Backoffice Operator/Admin" as BO
+participant "AircraftModelController" as Ctrl
+participant "GetTopUtilizedModelsUseCase" as UC
+participant "AircraftRepository" as Repo
+database "Database" as DB
+
+BO -> Ctrl : GET /api/aircraft-models/top-utilized?sortBy=hours
+activate Ctrl
+
+Ctrl -> UC : execute("hours")
+activate UC
+
+UC -> Repo : findAll()
+activate Repo
+
+Repo -> DB : SELECT * FROM aircrafts
+activate DB
+DB --> Repo : list of all aircraft instances
+deactivate DB
+
+Repo --> UC : List<Aircraft>
+deactivate Repo
+
+note right of UC: Groups aircrafts by model.\nSums totalFlightHours and\nnumberOfAssignments per model.\nSorts by chosen criteria DESC.\nLimits to 5 entries.
+
+UC -> UC : map to TopUtilizedModelResponse
+
+UC --> Ctrl : List<TopUtilizedModelResponse>
+deactivate UC
+
+Ctrl --> BO : 200 OK (JSON Collection)
+deactivate Ctrl
+@enduml

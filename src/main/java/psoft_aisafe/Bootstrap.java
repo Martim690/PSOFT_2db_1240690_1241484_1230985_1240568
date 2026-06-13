@@ -81,7 +81,7 @@ public class Bootstrap implements CommandLineRunner {
             // Adicionado: 600 horas, 210 tarefas no final
             aircraftRepository.save(new Aircraft(regE195, embraerE195, LocalDate.of(2023, 5, 10), 136, AircraftStatus.AVAILABLE, 600, 210));
         }
-        // 4. Routes Bootstrapping (Para habilitar US203 e relatórios)
+        // 4. Routes Bootstrapping (Para habilitar US203.md e relatórios)
         // Rota Curta: Lisboa -> Porto (Compatível com todos)
         if (!routeRepository.existsActiveRouteBetween("LIS", "OPO")) {
             RouteRequirements reqShort = new RouteRequirements(400, 50, "CAT1");

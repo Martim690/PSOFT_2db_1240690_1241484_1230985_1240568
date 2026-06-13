@@ -1,0 +1,15 @@
+@startuml
+autonumber
+actor "Backoffice Operator" as BO
+participant ":System" as System
+
+activate BO
+BO -> System : ask to view the Top 5 most utilized aircraft models (sortBy)
+activate System
+
+note right of System: The system aggregates flight hours\nand assignments per model across the fleet,\nsorts them, and limits the result to 5.
+
+System --> BO : displays the Top 5 utilized models
+deactivate System
+deactivate BO
+@enduml

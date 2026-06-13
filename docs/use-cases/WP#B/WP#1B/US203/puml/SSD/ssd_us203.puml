@@ -1,0 +1,15 @@
+@startuml
+autonumber
+actor "ATCC" as ATCC
+participant ":System" as System
+
+activate ATCC
+ATCC -> System : ask to view compatible routes for an aircraft (registrationNumber)
+activate System
+
+note right of System: The system fetches the aircraft limits,\nfetches all active routes, and\nfilters them based on range and capacity.
+
+System --> ATCC : displays a list of compatible routes
+deactivate System
+deactivate ATCC
+@enduml
