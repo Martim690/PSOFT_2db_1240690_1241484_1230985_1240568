@@ -37,6 +37,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/aircraft-models").hasAnyAuthority("BACKOFFICE_OPERATOR", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/aircrafts").hasAnyAuthority("ATCC", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/aircrafts/search").hasAnyAuthority("ATCC", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/aircrafts/*/compatible-routes").hasAnyAuthority("ATCC", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/aircrafts/*").hasAnyAuthority("ATCC", "BACKOFFICE_OPERATOR", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/aircraft-models/**", "/api/aircrafts").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/aircrafts/*/status").hasAnyAuthority("ATCC", "ADMIN")

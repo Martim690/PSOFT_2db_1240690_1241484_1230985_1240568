@@ -15,9 +15,11 @@ import psoft_aisafe.aircrafts.application.ListAircraftsUseCase;
 import psoft_aisafe.aircrafts.application.RegisterAircraftUseCase;
 import psoft_aisafe.aircrafts.application.SearchAircraftsUseCase;
 import psoft_aisafe.aircrafts.application.UpdateAircraftStatusUseCase;
+import psoft_aisafe.aircrafts.application.GetCompatibleRoutesUseCase;
 import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftRequest;
 import psoft_aisafe.aircrafts.application.dtos.UpdateAircraftStatusRequest;
 import psoft_aisafe.aircrafts.application.dtos.AircraftResponse;
+import psoft_aisafe.aircrafts.application.dtos.CompatibleRouteResponse;
 import psoft_aisafe.aircrafts.domain.Aircraft;
 import psoft_aisafe.aircrafts.domain.AircraftStatus;
 
@@ -32,13 +34,15 @@ public class AircraftController {
     private final SearchAircraftsUseCase searchAircraftsUseCase;
     private final GetAircraftByRegistrationUseCase getAircraftByRegistrationUseCase;
     private final UpdateAircraftStatusUseCase updateAircraftStatusUseCase;
+    private final GetCompatibleRoutesUseCase getCompatibleRoutesUseCase;
 
-    public AircraftController(RegisterAircraftUseCase registerAircraftUseCase, ListAircraftsUseCase listAircraftsUseCase, SearchAircraftsUseCase searchAircraftsUseCase, GetAircraftByRegistrationUseCase getAircraftByRegistrationUseCase, UpdateAircraftStatusUseCase updateAircraftStatusUseCase) {
+    public AircraftController(RegisterAircraftUseCase registerAircraftUseCase, ListAircraftsUseCase listAircraftsUseCase, SearchAircraftsUseCase searchAircraftsUseCase, GetAircraftByRegistrationUseCase getAircraftByRegistrationUseCase, UpdateAircraftStatusUseCase updateAircraftStatusUseCase, GetCompatibleRoutesUseCase getCompatibleRoutesUseCase) {
         this.registerAircraftUseCase = registerAircraftUseCase;
         this.listAircraftsUseCase = listAircraftsUseCase;
         this.searchAircraftsUseCase = searchAircraftsUseCase;
         this.getAircraftByRegistrationUseCase = getAircraftByRegistrationUseCase;
         this.updateAircraftStatusUseCase = updateAircraftStatusUseCase;
+        this.getCompatibleRoutesUseCase = getCompatibleRoutesUseCase;
     }
 
     @PostMapping
@@ -90,6 +94,21 @@ public class AircraftController {
     public ResponseEntity<EntityModel<AircraftResponse>> getAircraftByRegistration(@PathVariable String registrationNumber) {
         AircraftResponse aircraft = getAircraftByRegistrationUseCase.execute(registrationNumber);
         return ResponseEntity.ok(toModel(aircraft));
+    }
+
+    @GetMapping("/{registrationNumber}/compatible-routes")
+    @Operation(summary = "View active routes compatible with a specific aircraft (US203)")
+    public ResponseEntity<CollectionModel<EntityModel<CompatibleRouteResponse>>> getCompatibleRoutes(@PathVariable String registrationNumber) {
+
+        List<CompatibleRouteResponse> compatibleRoutes = getCompatibleRoutesUseCase.execute(registrationNumber);
+
+        List<EntityModel<CompatibleRouteResponse>> routeModels = compatibleRoutes.stream()
+                .map(route -> EntityModel.of(route,
+                        linkTo(methodOn(AircraftController.class).getCompatibleRoutes(registrationNumber)).withSelfRel()))
+                .toList();
+
+        return ResponseEntity.ok(CollectionModel.of(routeModels,
+                linkTo(methodOn(AircraftController.class).getCompatibleRoutes(registrationNumber)).withSelfRel()));
     }
 
     // Adaptar o toModel para o DTO
