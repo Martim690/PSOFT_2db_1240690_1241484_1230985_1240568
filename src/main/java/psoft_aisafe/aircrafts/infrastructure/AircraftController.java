@@ -17,11 +17,13 @@ import psoft_aisafe.aircrafts.application.SearchAircraftsUseCase;
 import psoft_aisafe.aircrafts.application.UpdateAircraftStatusUseCase;
 import psoft_aisafe.aircrafts.application.GetCompatibleRoutesUseCase;
 import psoft_aisafe.aircrafts.application.GetFleetStatusUseCase;
+import psoft_aisafe.aircrafts.application.CalculateAircraftOperationalHoursUseCase;
 import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftRequest;
 import psoft_aisafe.aircrafts.application.dtos.UpdateAircraftStatusRequest;
 import psoft_aisafe.aircrafts.application.dtos.AircraftResponse;
 import psoft_aisafe.aircrafts.application.dtos.CompatibleRouteResponse;
 import psoft_aisafe.aircrafts.application.dtos.FleetStatusResponse;
+import psoft_aisafe.aircrafts.application.dtos.AircraftOperationalHoursResponse;
 import psoft_aisafe.aircrafts.domain.Aircraft;
 import psoft_aisafe.aircrafts.domain.AircraftStatus;
 
@@ -38,8 +40,9 @@ public class AircraftController {
     private final UpdateAircraftStatusUseCase updateAircraftStatusUseCase;
     private final GetCompatibleRoutesUseCase getCompatibleRoutesUseCase;
     private final GetFleetStatusUseCase getFleetStatusUseCase;
+    private final CalculateAircraftOperationalHoursUseCase calculateAircraftOperationalHoursUseCase;
 
-    public AircraftController(RegisterAircraftUseCase registerAircraftUseCase, ListAircraftsUseCase listAircraftsUseCase, GetAircraftByRegistrationUseCase getAircraftByRegistrationUseCase, UpdateAircraftStatusUseCase updateAircraftStatusUseCase, SearchAircraftsUseCase searchAircraftsUseCase, GetCompatibleRoutesUseCase getCompatibleRoutesUseCase, GetFleetStatusUseCase getFleetStatusUseCase) {
+    public AircraftController(RegisterAircraftUseCase registerAircraftUseCase, ListAircraftsUseCase listAircraftsUseCase, GetAircraftByRegistrationUseCase getAircraftByRegistrationUseCase, UpdateAircraftStatusUseCase updateAircraftStatusUseCase, SearchAircraftsUseCase searchAircraftsUseCase, GetCompatibleRoutesUseCase getCompatibleRoutesUseCase, GetFleetStatusUseCase getFleetStatusUseCase, CalculateAircraftOperationalHoursUseCase calculateAircraftOperationalHoursUseCase) {
         this.registerAircraftUseCase = registerAircraftUseCase;
         this.listAircraftsUseCase = listAircraftsUseCase;
         this.searchAircraftsUseCase = searchAircraftsUseCase;
@@ -47,6 +50,7 @@ public class AircraftController {
         this.updateAircraftStatusUseCase = updateAircraftStatusUseCase;
         this.getCompatibleRoutesUseCase = getCompatibleRoutesUseCase;
         this.getFleetStatusUseCase = getFleetStatusUseCase;
+        this.calculateAircraftOperationalHoursUseCase = calculateAircraftOperationalHoursUseCase;
     }
 
     @PostMapping
@@ -137,6 +141,22 @@ public class AircraftController {
                 linkTo(methodOn(AircraftController.class).listAircrafts()).withRel("all-aircrafts"));
 
         return ResponseEntity.ok(modelRepresentation);
+    }
+
+    @GetMapping("/operational-hours")
+    @Operation(summary = "Calculate total operational hours for each aircraft (US206)")
+    public ResponseEntity<CollectionModel<EntityModel<AircraftOperationalHoursResponse>>> getOperationalHours() {
+
+        List<AircraftOperationalHoursResponse> hoursList = calculateAircraftOperationalHoursUseCase.execute();
+
+        // Mapeia os links HATEOAS. O utilizador pode querer clicar no avião para ver mais detalhes.
+        List<EntityModel<AircraftOperationalHoursResponse>> models = hoursList.stream()
+                .map(hours -> EntityModel.of(hours,
+                        linkTo(methodOn(AircraftController.class).getAircraftByRegistration(hours.registrationNumber())).withRel("aircraft-details")))
+                .toList();
+
+        return ResponseEntity.ok(CollectionModel.of(models,
+                linkTo(methodOn(AircraftController.class).getOperationalHours()).withSelfRel()));
     }
 
     @PatchMapping("/{registrationNumber}")
