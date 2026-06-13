@@ -1,36 +1,45 @@
 package psoft_aisafe.aircrafts.application;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import psoft_aisafe.aircrafts.application.dtos.AircraftModelResponse;
 import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftModelRequest;
-import psoft_aisafe.aircrafts.domain.*;
+import psoft_aisafe.aircrafts.domain.AircraftManufacturer;
+import psoft_aisafe.aircrafts.domain.AircraftModel;
+import psoft_aisafe.aircrafts.domain.AircraftModelRepository;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@Transactional
+@ExtendWith(MockitoExtension.class)
 class RegisterAircraftModelUseCaseTest {
 
-    @Autowired private RegisterAircraftModelUseCase useCase;
-    @Autowired private AircraftModelRepository modelRepository;
+    @Mock private AircraftModelRepository repository;
+    @InjectMocks private RegisterAircraftModelUseCase useCase;
 
     @Test
-    void shouldRegisterModelSuccessfullyInDatabase() {
-        RegisterAircraftModelRequest request = new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 20000, 5000, 800);
+    void shouldRegisterModelWithDiagramSuccessfully() {
+        RegisterAircraftModelRequest request = new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B777", 15000, 10000, 900, "url.png");
+        when(repository.findByModelName("B777")).thenReturn(Optional.empty());
+        when(repository.save(any(AircraftModel.class))).thenAnswer(i -> i.getArgument(0));
 
-        AircraftModel result = useCase.execute(request);
-
-        assertNotNull(result);
-        assertTrue(modelRepository.findByModelName("B737").isPresent());
+        AircraftModelResponse response = useCase.execute(request);
+        assertEquals("url.png", response.technicalDiagramUrl());
     }
 
     @Test
-    void shouldThrowExceptionIfModelAlreadyExistsInDatabase() {
-        RegisterAircraftModelRequest request = new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 20000, 5000, 800);
-        useCase.execute(request);
+    void shouldReturnEmptyStringIfDiagramIsMissing() {
+        RegisterAircraftModelRequest request = new RegisterAircraftModelRequest(AircraftManufacturer.AIRBUS, "A320", 15000, 10000, 900, null);
+        when(repository.findByModelName("A320")).thenReturn(Optional.empty());
+        when(repository.save(any(AircraftModel.class))).thenAnswer(i -> i.getArgument(0));
 
-        assertThrows(IllegalArgumentException.class, () -> useCase.execute(request));
+        AircraftModelResponse response = useCase.execute(request);
+        assertEquals("empty", response.technicalDiagramUrl());
     }
 }

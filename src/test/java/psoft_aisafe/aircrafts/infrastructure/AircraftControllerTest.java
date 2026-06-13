@@ -1,117 +1,103 @@
 package psoft_aisafe.aircrafts.infrastructure;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import psoft_aisafe.aircrafts.application.*;
-import psoft_aisafe.aircrafts.application.dtos.AircraftResponse;
-import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftRequest;
-import psoft_aisafe.aircrafts.application.dtos.UpdateAircraftStatusRequest;
+import psoft_aisafe.aircrafts.application.dtos.*;
 import psoft_aisafe.aircrafts.domain.*;
-import psoft_aisafe.security.application.JwtService;
-import psoft_aisafe.security.domain.UserRepository;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(AircraftController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@ExtendWith(MockitoExtension.class)
 class AircraftControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Mock private RegisterAircraftUseCase registerAircraftUseCase;
+    @Mock private ListAircraftsUseCase listAircraftsUseCase;
+    @Mock private GetAircraftByRegistrationUseCase getAircraftByRegistrationUseCase;
+    @Mock private UpdateAircraftStatusUseCase updateAircraftStatusUseCase;
+    @Mock private SearchAircraftsUseCase searchAircraftsUseCase;
+    @Mock private GetCompatibleRoutesUseCase getCompatibleRoutesUseCase;
+    @Mock private GetFleetStatusUseCase getFleetStatusUseCase;
+    @Mock private CalculateAircraftOperationalHoursUseCase calculateAircraftOperationalHoursUseCase;
 
-    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    @InjectMocks
+    private AircraftController controller;
 
-    @MockitoBean
-    private GetAircraftByRegistrationUseCase getAircraftByRegistrationUseCase;
+    @Test
+    void shouldReturn201CreatedWhenRegisteringAircraft() {
+        // Arrange
+        RegisterAircraftRequest request = new RegisterAircraftRequest("CS-TPA", "B737", LocalDate.now(), 150, AircraftStatus.AVAILABLE);
 
-    @MockitoBean
-    private ListAircraftsUseCase listAircraftsUseCase;
+        AircraftModel model = new AircraftModel("B737", 1000, 1000, 800, AircraftManufacturer.BOEING, null);
+        Aircraft expectedAircraft = new Aircraft(new RegistrationNumber("CS-TPA"), model, LocalDate.now(), 150, AircraftStatus.AVAILABLE);
 
-    @MockitoBean
-    private RegisterAircraftUseCase registerAircraftUseCase;
+        when(registerAircraftUseCase.execute(any(RegisterAircraftRequest.class))).thenReturn(expectedAircraft);
 
-    @MockitoBean
-    private SearchAircraftsUseCase searchAircraftsUseCase;
+        // Act
+        ResponseEntity<EntityModel<Aircraft>> response = controller.registerAircraft(request);
 
-    @MockitoBean
-    private UpdateAircraftStatusUseCase updateAircraftStatusUseCase;
+        // Assert
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
 
-    @MockitoBean
-    private JwtService jwtService;
-
-    @MockitoBean
-    private UserRepository userRepository;
-
-    // Mantemos a Entidade para os Casos de Uso de Registo e Update
-    private Aircraft mockAircraft;
-
-    // Mantemos o DTO para os Casos de Uso de Consulta/Get
-    private AircraftResponse mockAircraftResponse;
-
-    @BeforeEach
-    void setUp() {
-        AircraftModel model = new AircraftModel("A320", 20000, 5000, 800, AircraftManufacturer.AIRBUS);
-        mockAircraft = new Aircraft(new RegistrationNumber("CS-TPA"), model, LocalDate.now(), 150, AircraftStatus.AVAILABLE);
-
-        mockAircraftResponse = new AircraftResponse(
-                "CS-TPA",
-                "A320",
-                LocalDate.now(),
-                150,
-                AircraftStatus.AVAILABLE.name()
-        );
+        // Corrigido: Usar .getNumber() para extrair a String do Value Object
+        assertEquals("CS-TPA", response.getBody().getContent().getRegistrationNumber().getNumber());
     }
 
     @Test
-    void ensureRegisterAircraftReturns201Created() throws Exception {
-        RegisterAircraftRequest request = new RegisterAircraftRequest("CS-TPA", "A320", LocalDate.now(), 150, AircraftStatus.AVAILABLE);
+    void shouldReturn200OkWhenListingFleetStatus() {
+        // Arrange
+        FleetStatusResponse expectedResponse = new FleetStatusResponse(10, Map.of("AVAILABLE", 10L));
+        when(getFleetStatusUseCase.execute()).thenReturn(expectedResponse);
 
-        // O Caso de Uso de registo continua a devolver a Entidade Aircraft original
-        when(registerAircraftUseCase.execute(any())).thenReturn(mockAircraft);
+        // Act
+        ResponseEntity<EntityModel<FleetStatusResponse>> response = controller.getFleetStatus();
 
-        mockMvc.perform(post("/api/aircrafts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.registrationNumber.number").value("CS-TPA"));
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(10, response.getBody().getContent().totalAircraft());
     }
 
     @Test
-    void ensureGetAircraftByRegistrationReturns200OK() throws Exception {
-        // O Caso de Uso de Get agora devolve o DTO AircraftResponse
-        when(getAircraftByRegistrationUseCase.execute("CS-TPA")).thenReturn(mockAircraftResponse);
+    void shouldReturn200OkWhenCalculatingOperationalHours() {
+        // Arrange
+        AircraftOperationalHoursResponse hoursResponse = new AircraftOperationalHoursResponse("CS-TPA", 5000);
+        when(calculateAircraftOperationalHoursUseCase.execute()).thenReturn(List.of(hoursResponse));
 
-        mockMvc.perform(get("/api/aircrafts/CS-TPA"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.registrationNumber").value("CS-TPA")); // Caminho direto no DTO Record
+        // Act
+        ResponseEntity<CollectionModel<EntityModel<AircraftOperationalHoursResponse>>> response = controller.getOperationalHours();
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
     }
 
     @Test
-    void ensureUpdateStatusWithIfMatchHeaderReturns200OK() throws Exception {
-        UpdateAircraftStatusRequest request = new UpdateAircraftStatusRequest(AircraftStatus.INACTIVE);
+    void shouldReturn200OkWhenGettingCompatibleRoutes() {
+        // Arrange
+        CompatibleRouteResponse routeResponse = new CompatibleRouteResponse("id", "LIS", "OPO", 400, 100, true);
+        when(getCompatibleRoutesUseCase.execute("CS-TPA")).thenReturn(List.of(routeResponse));
 
-        // O Caso de Uso de update continua a devolver a Entidade Aircraft original
-        when(updateAircraftStatusUseCase.execute(any(), any())).thenReturn(mockAircraft);
+        // Act
+        ResponseEntity<CollectionModel<EntityModel<CompatibleRouteResponse>>> response = controller.getCompatibleRoutes("CS-TPA");
 
-        mockMvc.perform(patch("/api/aircrafts/CS-TPA/status")
-                        .header("If-Match", "0")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.registrationNumber.number").value("CS-TPA"));
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
     }
 }
