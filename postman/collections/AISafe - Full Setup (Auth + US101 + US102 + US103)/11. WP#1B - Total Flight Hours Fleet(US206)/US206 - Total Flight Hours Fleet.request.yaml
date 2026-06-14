@@ -1,0 +1,56 @@
+$kind: http-request
+name: US206 - Total Flight Hours Fleet
+url: "{{base_url}}/api/aircrafts/operational-hours"
+method: GET
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{jwt_token}}
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 200 OK\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Response is a valid JSON with HATEOAS structure\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    pm.expect(jsonData).to.have.property(\"_links\");\r
+
+      \    \r
+
+      \    if (jsonData._embedded) {\r
+
+      \        var hoursList = jsonData._embedded.aircraftOperationalHoursResponseList;\r
+
+      \        pm.expect(hoursList).to.be.an('array');\r
+
+      \        \r
+
+      \        if (hoursList.length > 0) {\r
+
+      \            var firstItem = hoursList[0];\r
+
+      \            pm.expect(firstItem).to.have.property(\"registrationNumber\");\r
+
+      \            pm.expect(firstItem).to.have.property(\"totalFlightHours\");\r
+
+      \            pm.expect(firstItem.totalFlightHours).to.be.a(\"number\");\r
+
+      \            \r
+
+      \            // Verifica o link gerado para os detalhes do avião\r
+
+      \            pm.expect(firstItem._links).to.have.property(\"aircraft-details\");\r
+
+      \        }\r
+
+      \    }\r
+
+      });"
+    language: text/javascript
+order: 1781353629494

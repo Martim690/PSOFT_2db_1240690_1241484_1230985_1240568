@@ -45,12 +45,6 @@ package "Aircraft Aggregate" {
     registrationNumber : String
   }
 
-  class AircraftCertification <<value object>> {
-    certificationCode : String
-    description : String
-    validFrom : Date
-    validUntil : Date
-  }
 
   enum AircraftStatus {
     AVAILABLE

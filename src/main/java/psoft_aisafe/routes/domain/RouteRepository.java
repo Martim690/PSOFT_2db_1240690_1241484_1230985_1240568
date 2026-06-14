@@ -23,4 +23,5 @@ public interface RouteRepository {
      * Check if a route already exists between two airports (active only).
      */
     boolean existsActiveRouteBetween(String origin, String destination);
+    List<Route> findAll();
 }

@@ -1,0 +1,35 @@
+@startuml
+autonumber
+actor "ATCC/Admin" as ATCC
+participant "AircraftController" as Ctrl
+participant "GetFleetStatusUseCase" as UC
+participant "AircraftRepository" as Repo
+database "Database" as DB
+
+ATCC -> Ctrl : GET /api/aircrafts/fleet-status
+activate Ctrl
+
+Ctrl -> UC : execute()
+activate UC
+
+UC -> Repo : findAll()
+activate Repo
+
+Repo -> DB : SELECT * FROM aircrafts
+activate DB
+DB --> Repo : list of all aircraft instances
+deactivate DB
+
+Repo --> UC : fleetList
+deactivate Repo
+
+note right of UC: Computes total aircraft.\nGroups entities by status.\nFills empty statuses with 0 count.
+
+UC -> UC : create FleetStatusResponse
+
+UC --> Ctrl : fleetStatusResponse
+deactivate UC
+
+Ctrl --> ATCC : 200 OK (JSON Response)
+deactivate Ctrl
+@enduml

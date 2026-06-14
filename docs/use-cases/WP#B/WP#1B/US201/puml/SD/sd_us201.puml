@@ -1,0 +1,55 @@
+@startuml
+autonumber
+actor "Backoffice Operator/Admin" as BO
+participant "AircraftModelController" as Ctrl
+participant "UpdateAircraftModelSpecsUseCase" as UC
+participant "AircraftModel\n(Entity)" as Entity
+participant "AircraftModelRepository" as Repo
+database "Database" as DB
+
+BO -> Ctrl : PATCH /api/aircraft-models/{modelName} (JSON)
+activate Ctrl
+
+Ctrl -> UC : execute(modelName, request)
+activate UC
+
+note right of UC: Extracts data from DTO\n(request)
+
+UC -> Repo : findByModelName(modelName)
+activate Repo
+
+Repo -> DB : SELECT * FROM aircraft_models WHERE name = modelName
+activate DB
+DB --> Repo : existing record
+deactivate DB
+
+Repo --> UC : existingModel
+deactivate Repo
+
+opt if request fields are not null
+    UC -> Entity : updateSpecs(fuelCapacity, maximumRange, cruisingSpeed)
+    activate Entity
+
+    note right of Entity: Domain validation occurs here\n(e.g., checking if values > 0)
+
+    Entity --> UC : updatedModel
+    deactivate Entity
+end
+
+UC -> Repo : save(updatedModel)
+activate Repo
+
+Repo -> DB : UPDATE aircraft_models SET ...
+activate DB
+DB --> Repo : updated record
+deactivate DB
+
+Repo --> UC : savedModel
+deactivate Repo
+
+UC --> Ctrl : savedModel
+deactivate UC
+
+Ctrl --> BO : 200 OK (JSON Response)
+deactivate Ctrl
+@enduml

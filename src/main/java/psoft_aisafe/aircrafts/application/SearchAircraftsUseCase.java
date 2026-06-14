@@ -1,7 +1,7 @@
 package psoft_aisafe.aircrafts.application;
 
 import org.springframework.stereotype.Service;
-import psoft_aisafe.aircrafts.domain.Aircraft;
+import psoft_aisafe.aircrafts.application.dtos.AircraftResponse;
 import psoft_aisafe.aircrafts.domain.AircraftRepository;
 import psoft_aisafe.aircrafts.domain.AircraftStatus;
 
@@ -16,7 +16,16 @@ public class SearchAircraftsUseCase {
         this.aircraftRepository = aircraftRepository;
     }
 
-    public List<Aircraft> execute(String modelName, AircraftStatus status, Integer year) {
-        return aircraftRepository.searchAircrafts(modelName, status, year);
+    public List<AircraftResponse> execute(String modelName, AircraftStatus status, Integer year) {
+        return aircraftRepository.searchAircrafts(modelName, status, year)
+                .stream()
+                .map(aircraft -> new AircraftResponse(
+                        aircraft.getRegistrationNumber().getNumber(),
+                        aircraft.getModel().getModelName(),
+                        aircraft.getManufacturingDate(),
+                        aircraft.getSeatingCapacity(),
+                        aircraft.getCurrentStatus().name()
+                ))
+                .toList();
     }
 }

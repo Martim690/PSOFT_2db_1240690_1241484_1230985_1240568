@@ -1,0 +1,35 @@
+@startuml
+autonumber
+actor "ATCC/Admin" as ATCC
+participant "AircraftController" as Ctrl
+participant "CalculateAircraftOperationalHoursUseCase" as UC
+participant "AircraftRepository" as Repo
+database "Database" as DB
+
+ATCC -> Ctrl : GET /api/aircrafts/operational-hours
+activate Ctrl
+
+Ctrl -> UC : execute()
+activate UC
+
+UC -> Repo : findAll()
+activate Repo
+
+Repo -> DB : SELECT * FROM aircrafts
+activate DB
+DB --> Repo : list of all aircraft instances
+deactivate DB
+
+Repo --> UC : fleetList
+deactivate Repo
+
+note right of UC: Iterates over entities.\nExtracts registrationNumber and\ntotalFlightHours for each aircraft.
+
+UC -> UC : map to List<AircraftOperationalHoursResponse>
+
+UC --> Ctrl : hoursResponseList
+deactivate UC
+
+Ctrl --> ATCC : 200 OK (JSON Collection)
+deactivate Ctrl
+@enduml

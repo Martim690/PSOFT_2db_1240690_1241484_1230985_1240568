@@ -1,0 +1,36 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Atores
+actor "Backoffice Operator" as BO
+actor "ATCC" as ATCC
+actor "Admin" as Admin
+
+rectangle "WP#1B - Aircraft & Fleet Management" {
+    usecase "US201: Update an aircraft model's specifications" as US201
+    usecase "US202: Register an aircraft model with an optional image or technical diagram" as US202
+    usecase "US203: View compatible routes for a specific aircraft" as US203
+    usecase "US204: See the Top 5 most utilized aircraft models" as US204
+    usecase "US205: View real-time aircraft availability status" as US205
+    usecase "US206: Calculate the total operational hours for each aircraft" as US206
+}
+
+' Associações do Backoffice Operator
+BO -- US201
+BO -- US202
+BO -- US204
+
+' Associações do ATCC
+ATCC -- US203
+ATCC -- US205
+ATCC -- US206
+
+Admin -- US201
+Admin -- US202
+Admin -- US203
+Admin -- US204
+Admin -- US205
+Admin -- US206
+
+@enduml

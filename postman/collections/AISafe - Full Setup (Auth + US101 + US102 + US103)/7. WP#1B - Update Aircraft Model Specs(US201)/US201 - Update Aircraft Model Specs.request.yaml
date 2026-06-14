@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{base_url}}/api/aircraft-models/B737-800"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: json
+  content: "{\r\n  \"maximumRange\": 6500\r\n}"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 200 OK\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });"
+    language: text/javascript
+order: 1781203192840

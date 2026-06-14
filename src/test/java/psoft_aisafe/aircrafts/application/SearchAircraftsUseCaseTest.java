@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import psoft_aisafe.aircrafts.application.dtos.AircraftResponse;
 import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftModelRequest;
 import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftRequest;
 import psoft_aisafe.aircrafts.domain.*;
@@ -23,16 +24,16 @@ class SearchAircraftsUseCaseTest {
 
     @Test
     void shouldSearchAircraftsInDatabase() {
-        registerModelUseCase.execute(new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 20000, 5000, 800));
+        registerModelUseCase.execute(new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 20000, 5000, 800,null));
         registerAircraftUseCase.execute(new RegisterAircraftRequest("CS-SRC1", "B737", LocalDate.now(), 180, AircraftStatus.IN_FLIGHT));
         registerAircraftUseCase.execute(new RegisterAircraftRequest("CS-SRC2", "B737", LocalDate.now(), 180, AircraftStatus.AVAILABLE));
 
-        List<Aircraft> result = searchUseCase.execute(null, AircraftStatus.IN_FLIGHT, null);
+        List<AircraftResponse> result = searchUseCase.execute(null, AircraftStatus.IN_FLIGHT, null);
 
         assertFalse(result.isEmpty());
 
         boolean found = result.stream()
-                .anyMatch(a -> a.getRegistrationNumber().getNumber().equals("CS-SRC1"));
+                .anyMatch(a -> a.registrationNumber().equals("CS-SRC1"));
         assertTrue(found, "The test aircraft CS-SRC1 should be in the search results.");
     }
 }

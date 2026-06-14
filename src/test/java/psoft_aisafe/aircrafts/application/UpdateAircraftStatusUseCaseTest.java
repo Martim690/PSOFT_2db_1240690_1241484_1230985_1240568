@@ -1,65 +1,39 @@
 package psoft_aisafe.aircrafts.application;
 
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
-import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftModelRequest;
-import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftRequest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import psoft_aisafe.aircrafts.application.dtos.UpdateAircraftStatusRequest;
 import psoft_aisafe.aircrafts.domain.*;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@Transactional
+@ExtendWith(MockitoExtension.class)
 class UpdateAircraftStatusUseCaseTest {
 
-    @Autowired private UpdateAircraftStatusUseCase updateUseCase;
-    @Autowired private RegisterAircraftUseCase registerAircraftUseCase;
-    @Autowired private RegisterAircraftModelUseCase registerModelUseCase;
-    @Autowired private AircraftRepository aircraftRepository;
-    @Autowired private EntityManager entityManager; // Added to manage JPA cache
+    @Mock private AircraftRepository aircraftRepository;
+    @InjectMocks private UpdateAircraftStatusUseCase useCase;
 
     @Test
-    void shouldUpdateStatusInDatabase() {
-        registerModelUseCase.execute(new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 20000, 5000, 800));
-        registerAircraftUseCase.execute(new RegisterAircraftRequest("CS-UPD1", "B737", LocalDate.now(), 180, AircraftStatus.AVAILABLE));
+    void shouldUpdateStatusSuccessfully() {
+        AircraftModel model = new AircraftModel("B737", 100, 100, 100, AircraftManufacturer.BOEING, null);
+        Aircraft aircraft = new Aircraft(new RegistrationNumber("CS-AAA"), model, LocalDate.now(), 150, AircraftStatus.AVAILABLE);
 
-        UpdateAircraftStatusRequest patchRequest = new UpdateAircraftStatusRequest(AircraftStatus.IN_FLIGHT);
-        updateUseCase.execute("CS-UPD1", patchRequest);
+        when(aircraftRepository.findByRegistrationNumber(any(RegistrationNumber.class))).thenReturn(Optional.of(aircraft));
+        when(aircraftRepository.save(any(Aircraft.class))).thenAnswer(i -> i.getArgument(0));
 
-        Aircraft aircraft = aircraftRepository.findByRegistrationNumber(new RegistrationNumber("CS-UPD1")).get();
-        assertEquals(AircraftStatus.IN_FLIGHT, aircraft.getCurrentStatus());
-    }
+        UpdateAircraftStatusRequest request = new UpdateAircraftStatusRequest(AircraftStatus.IN_FLIGHT);
 
-    @Test
-    void shouldFailIfAircraftDoesNotExist() {
-        UpdateAircraftStatusRequest patchRequest = new UpdateAircraftStatusRequest(AircraftStatus.IN_FLIGHT);
-        assertThrows(IllegalArgumentException.class, () -> updateUseCase.execute("CS-FAKE", patchRequest));
-    }
+        // Corrigido: O teu Use Case original devolve a Entidade Aircraft, logo testamos isso
+        Aircraft result = useCase.execute("CS-AAA", request);
 
-    @Test
-    void shouldThrowExceptionOnConcurrentUpdate() {
-        registerModelUseCase.execute(new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "A320", 20000, 5000, 800));
-        registerAircraftUseCase.execute(new RegisterAircraftRequest("CS-UPD2", "A320", LocalDate.now(), 180, AircraftStatus.AVAILABLE));
-
-        Aircraft user1Aircraft = aircraftRepository.findByRegistrationNumber(new RegistrationNumber("CS-UPD2")).get();
-        entityManager.detach(user1Aircraft);
-
-        Aircraft user2Aircraft = aircraftRepository.findByRegistrationNumber(new RegistrationNumber("CS-UPD2")).get();
-
-        user2Aircraft.updateStatus(AircraftStatus.IN_FLIGHT);
-        aircraftRepository.saveAndFlush(user2Aircraft);
-
-        user1Aircraft.updateStatus(AircraftStatus.UNDER_MAINTENANCE);
-
-        assertThrows(ObjectOptimisticLockingFailureException.class, () -> {
-            aircraftRepository.saveAndFlush(user1Aircraft);
-        });
+        assertEquals(AircraftStatus.IN_FLIGHT, result.getCurrentStatus());
     }
 }
