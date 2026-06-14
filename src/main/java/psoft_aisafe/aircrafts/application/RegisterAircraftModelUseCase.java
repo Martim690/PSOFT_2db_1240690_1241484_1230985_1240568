@@ -33,7 +33,6 @@ public class RegisterAircraftModelUseCase {
 
         AircraftModel savedModel = modelRepository.save(newModel);
 
-        // Validação: se o diagrama vier nulo ou em branco, expõe "empty" no DTO
         String finalDiagram = savedModel.getTechnicalDiagramUrl();
         if (finalDiagram == null || finalDiagram.trim().isEmpty()) {
             finalDiagram = "empty";

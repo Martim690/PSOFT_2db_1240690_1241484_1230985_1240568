@@ -20,12 +20,10 @@ public class UpdateAircraftModelSpecsUseCase {
         AircraftModel model = modelRepository.findByModelName(modelName)
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft model not found: " + modelName));
 
-        // Se o campo for nulo (omitido no JSON), mantém o valor que já está na Base de Dados
         int finalFuelCapacity = request.fuelCapacity() != null ? request.fuelCapacity() : model.getFuelCapacity();
         int finalMaximumRange = request.maximumRange() != null ? request.maximumRange() : model.getMaximumRange();
         int finalCruisingSpeed = request.cruisingSpeed() != null ? request.cruisingSpeed() : model.getCruisingSpeed();
 
-        // Aplica as especificações finais calculadas de forma segura
         model.updateSpecifications(finalFuelCapacity, finalMaximumRange, finalCruisingSpeed);
 
         return modelRepository.save(model);

@@ -24,14 +24,12 @@ public class GetCompatibleRoutesUseCase {
     public List<CompatibleRouteResponse> execute(String registrationText) {
         RegistrationNumber registrationNumber = new RegistrationNumber(registrationText);
 
-        // 1. Procurar a aeronave pretendida
         Aircraft aircraft = aircraftRepository.findByRegistrationNumber(registrationNumber)
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft not found with registration: " + registrationText));
 
         int aircraftRange = aircraft.getModel().getMaximumRange();
-        int aircraftCapacity = aircraft.getSeatingCapacity(); // Lotação específica da instância
+        int aircraftCapacity = aircraft.getSeatingCapacity();
 
-        // 2. Procurar todas as rotas e filtrar apenas as compatíveis e ativas
         return routeRepository.findAll().stream()
                 .filter(Route::isActive)
                 .filter(route -> aircraftRange >= route.getRequirements().getMinimumRange())

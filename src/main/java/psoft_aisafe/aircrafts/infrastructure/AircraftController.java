@@ -119,7 +119,6 @@ public class AircraftController {
                 linkTo(methodOn(AircraftController.class).getCompatibleRoutes(registrationNumber)).withSelfRel()));
     }
 
-    // Adaptar o toModel para o DTO
     private EntityModel<AircraftResponse> toModel(AircraftResponse aircraft) {
         String reg = aircraft.registrationNumber(); // Como é um Record, acede-se diretamente ao método do campo
         return EntityModel.of(aircraft,
@@ -135,7 +134,6 @@ public class AircraftController {
 
         FleetStatusResponse report = getFleetStatusUseCase.execute();
 
-        // Adiciona links HATEOAS para navegação
         EntityModel<FleetStatusResponse> modelRepresentation = EntityModel.of(report,
                 linkTo(methodOn(AircraftController.class).getFleetStatus()).withSelfRel(),
                 linkTo(methodOn(AircraftController.class).listAircrafts()).withRel("all-aircrafts"));
@@ -149,7 +147,6 @@ public class AircraftController {
 
         List<AircraftOperationalHoursResponse> hoursList = calculateAircraftOperationalHoursUseCase.execute();
 
-        // Mapeia os links HATEOAS. O utilizador pode querer clicar no avião para ver mais detalhes.
         List<EntityModel<AircraftOperationalHoursResponse>> models = hoursList.stream()
                 .map(hours -> EntityModel.of(hours,
                         linkTo(methodOn(AircraftController.class).getAircraftByRegistration(hours.registrationNumber())).withRel("aircraft-details")))

@@ -18,8 +18,6 @@ public class CalculateAircraftOperationalHoursUseCase {
     public List<AircraftOperationalHoursResponse> execute() {
         return aircraftRepository.findAll().stream()
                 .map(aircraft -> new AircraftOperationalHoursResponse(
-                        // Dependendo de como a tua classe RegistrationNumber está feita,
-                        // podes usar .toString() ou o getter direto se tiveres um (ex: .getRegistrationNumber())
                         aircraft.getRegistrationNumber().getNumber(),
                         aircraft.getTotalFlightHours()
                 ))

@@ -19,7 +19,6 @@ public class ListAircraftModelsUseCase {
         return modelRepository.findAll()
                 .stream()
                 .map(model -> {
-                    // Validação para manter a consistência: se não houver diagrama, devolve "empty"
                     String diagram = model.getTechnicalDiagramUrl();
                     if (diagram == null || diagram.trim().isEmpty()) {
                         diagram = "empty";

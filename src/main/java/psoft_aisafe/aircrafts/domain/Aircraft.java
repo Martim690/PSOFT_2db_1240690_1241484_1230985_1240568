@@ -45,12 +45,10 @@ public class Aircraft {
 
     protected Aircraft() {}
 
-    // Construtor original (mantido para os testes não falharem)
     public Aircraft(RegistrationNumber registrationNumber, AircraftModel model, LocalDate manufacturingDate, int seatingCapacity, AircraftStatus currentStatus) {
         this(registrationNumber, model, manufacturingDate, seatingCapacity, currentStatus, 0, 0);
     }
 
-    // Novo construtor completo (Usado no Bootstrap)
     public Aircraft(RegistrationNumber registrationNumber, AircraftModel model, LocalDate manufacturingDate, int seatingCapacity, AircraftStatus currentStatus, int totalFlightHours, int numberOfAssignments) {
         if (registrationNumber == null) throw new IllegalArgumentException("Registration number is required.");
         if (model == null) throw new IllegalArgumentException("Aircraft model is required.");

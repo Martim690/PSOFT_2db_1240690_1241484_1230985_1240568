@@ -31,7 +31,6 @@ class UpdateAircraftStatusUseCaseTest {
 
         UpdateAircraftStatusRequest request = new UpdateAircraftStatusRequest(AircraftStatus.IN_FLIGHT);
 
-        // Corrigido: O teu Use Case original devolve a Entidade Aircraft, logo testamos isso
         Aircraft result = useCase.execute("CS-AAA", request);
 
         assertEquals(AircraftStatus.IN_FLIGHT, result.getCurrentStatus());

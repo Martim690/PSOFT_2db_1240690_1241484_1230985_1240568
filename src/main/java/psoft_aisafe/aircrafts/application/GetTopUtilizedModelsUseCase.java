@@ -42,7 +42,6 @@ public class GetTopUtilizedModelsUseCase {
                 })
                 .collect(Collectors.toList());
 
-        // Ordenação dinâmica
         if ("assignments".equalsIgnoreCase(sortBy)) {
             utilizedModels.sort((m1, m2) -> Integer.compare(m2.totalAssignments(), m1.totalAssignments()));
         } else {

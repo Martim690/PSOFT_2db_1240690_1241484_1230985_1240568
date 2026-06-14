@@ -20,7 +20,6 @@ public class AircraftModel {
     private int maximumRange;
     private int cruisingSpeed;
 
-    // US202: Campo opcional para guardar a imagem ou diagrama técnico
     private String technicalDiagramUrl;
 
     @Enumerated(EnumType.STRING)

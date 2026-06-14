@@ -26,7 +26,6 @@ class GetCompatibleRoutesUseCaseTest {
 
     @Test
     void shouldReturnOnlyCompatibleAndActiveRoutes() {
-        // Avião: Range 5000, Capacidade 150
         AircraftModel model = new AircraftModel("B737", 10000, 5000, 800, AircraftManufacturer.BOEING, null);
         Aircraft aircraft = new Aircraft(new RegistrationNumber("CS-TPA"), model, LocalDate.now(), 150, AircraftStatus.AVAILABLE);
 

@@ -31,10 +31,8 @@ class AircraftModelControllerTest {
 
     @Test
     void shouldReturn201CreatedWhenRegisteringModel() {
-        // Correção do 6.º parâmetro adicionando "url.png"
         RegisterAircraftModelRequest request = new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B777", 100, 100, 100, "url.png");
 
-        // Retornamos agora o DTO esperado e não a Entidade
         AircraftModelResponse expectedResponse = new AircraftModelResponse("B777", "BOEING", 100, 100, 100, "url.png");
 
         when(registerUseCase.execute(any(RegisterAircraftModelRequest.class))).thenReturn(expectedResponse);

@@ -28,15 +28,12 @@ class UpdateAircraftModelSpecsUseCaseTest {
         when(repository.findByModelName("B737")).thenReturn(Optional.of(existingModel));
         when(repository.save(any(AircraftModel.class))).thenReturn(existingModel);
 
-        // Só altera fuelCapacity e cruisingSpeed, maximumRange vem a null
         UpdateAircraftModelSpecsRequest request = new UpdateAircraftModelSpecsRequest(8000, null, 900);
 
-        // Corrigido: O Use Case devolve a Entidade AircraftModel e não o DTO
         AircraftModel result = useCase.execute("B737", request);
 
-        // Corrigido: Usar os métodos get...() da entidade
         assertEquals(8000, result.getFuelCapacity());
-        assertEquals(2000, result.getMaximumRange()); // Manteve o antigo!
+        assertEquals(2000, result.getMaximumRange());
         assertEquals(900, result.getCruisingSpeed());
     }
 }

@@ -23,14 +23,12 @@ public class GetFleetStatusUseCase {
         List<Aircraft> fleet = aircraftRepository.findAll();
         long total = fleet.size();
 
-        // Agrupa as aeronaves da base de dados por estado e conta-as
         Map<String, Long> statusCounts = fleet.stream()
                 .collect(Collectors.groupingBy(
                         a -> a.getCurrentStatus().name(),
                         Collectors.counting()
                 ));
 
-        // Garante que todos os estados possíveis existem no JSON, mesmo que a contagem seja 0
         for (AircraftStatus status : AircraftStatus.values()) {
             statusCounts.putIfAbsent(status.name(), 0L);
         }

@@ -32,7 +32,6 @@ class GetTopUtilizedModelsUseCaseTest {
 
         List<TopUtilizedModelResponse> result = useCase.execute("hours");
 
-        // O M2 tem 500 horas, por isso tem de vir em primeiro
         assertEquals("M2", result.get(0).modelName());
         assertEquals(500, result.get(0).totalFlightHours());
         assertEquals("M1", result.get(1).modelName());

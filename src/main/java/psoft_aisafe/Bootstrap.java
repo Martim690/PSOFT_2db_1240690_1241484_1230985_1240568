@@ -66,36 +66,29 @@ public class Bootstrap implements CommandLineRunner {
 //Aircraft
         RegistrationNumber regA350 = new RegistrationNumber("CS-TXA");
         if (aircraftRepository.findByRegistrationNumber(regA350).isEmpty()) {
-            // Adicionado: 4500 horas, 300 tarefas no final
             aircraftRepository.save(new Aircraft(regA350, airbusA350, LocalDate.of(2021, 3, 15), 300, AircraftStatus.AVAILABLE, 4500, 300));
         }
 
         RegistrationNumber regB787 = new RegistrationNumber("CS-TZE");
         if (aircraftRepository.findByRegistrationNumber(regB787).isEmpty()) {
-            // Adicionado: 3200 horas, 220 tarefas no final
             aircraftRepository.save(new Aircraft(regB787, boeing787, LocalDate.of(2019, 8, 24), 290, AircraftStatus.IN_FLIGHT, 3200, 220));
         }
 
         RegistrationNumber regE195 = new RegistrationNumber("CS-TTY");
         if (aircraftRepository.findByRegistrationNumber(regE195).isEmpty()) {
-            // Adicionado: 600 horas, 210 tarefas no final
             aircraftRepository.save(new Aircraft(regE195, embraerE195, LocalDate.of(2023, 5, 10), 136, AircraftStatus.AVAILABLE, 600, 210));
         }
-        // 4. Routes Bootstrapping (Para habilitar US203.md e relatórios)
-        // Rota Curta: Lisboa -> Porto (Compatível com todos)
+//Testing Routes for WP#1B
         if (!routeRepository.existsActiveRouteBetween("LIS", "OPO")) {
             RouteRequirements reqShort = new RouteRequirements(400, 50, "CAT1");
             routeRepository.save(new Route("LIS", "OPO", reqShort, 300.0, 50));
         }
 
-        // Rota Média: Lisboa -> Paris CDG (Compatível com todos)
         if (!routeRepository.existsActiveRouteBetween("LIS", "CDG")) {
             RouteRequirements reqMedium = new RouteRequirements(2000, 120, "CAT2");
             routeRepository.save(new Route("LIS", "CDG", reqMedium, 1700.0, 150));
         }
 
-        // Rota de Longo Curso Exigente: Lisboa -> New York JFK
-        // (A320neo tem range 6300km (OK), mas o B737-800 tem 5436km (Incompatível se a distância real exigir mais alcance ou margem))
         if (!routeRepository.existsActiveRouteBetween("LIS", "JFK")) {
             RouteRequirements reqLong = new RouteRequirements(5600, 150, "CAT3");
             routeRepository.save(new Route("LIS", "JFK", reqLong, 5400.0, 480));

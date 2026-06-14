@@ -39,7 +39,6 @@ class AircraftControllerTest {
 
     @Test
     void shouldReturn201CreatedWhenRegisteringAircraft() {
-        // Arrange
         RegisterAircraftRequest request = new RegisterAircraftRequest("CS-TPA", "B737", LocalDate.now(), 150, AircraftStatus.AVAILABLE);
 
         AircraftModel model = new AircraftModel("B737", 1000, 1000, 800, AircraftManufacturer.BOEING, null);
@@ -47,27 +46,21 @@ class AircraftControllerTest {
 
         when(registerAircraftUseCase.execute(any(RegisterAircraftRequest.class))).thenReturn(expectedAircraft);
 
-        // Act
         ResponseEntity<EntityModel<Aircraft>> response = controller.registerAircraft(request);
 
-        // Assert
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
 
-        // Corrigido: Usar .getNumber() para extrair a String do Value Object
         assertEquals("CS-TPA", response.getBody().getContent().getRegistrationNumber().getNumber());
     }
 
     @Test
     void shouldReturn200OkWhenListingFleetStatus() {
-        // Arrange
         FleetStatusResponse expectedResponse = new FleetStatusResponse(10, Map.of("AVAILABLE", 10L));
         when(getFleetStatusUseCase.execute()).thenReturn(expectedResponse);
 
-        // Act
         ResponseEntity<EntityModel<FleetStatusResponse>> response = controller.getFleetStatus();
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(10, response.getBody().getContent().totalAircraft());
@@ -75,28 +68,22 @@ class AircraftControllerTest {
 
     @Test
     void shouldReturn200OkWhenCalculatingOperationalHours() {
-        // Arrange
         AircraftOperationalHoursResponse hoursResponse = new AircraftOperationalHoursResponse("CS-TPA", 5000);
         when(calculateAircraftOperationalHoursUseCase.execute()).thenReturn(List.of(hoursResponse));
 
-        // Act
         ResponseEntity<CollectionModel<EntityModel<AircraftOperationalHoursResponse>>> response = controller.getOperationalHours();
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }
 
     @Test
     void shouldReturn200OkWhenGettingCompatibleRoutes() {
-        // Arrange
         CompatibleRouteResponse routeResponse = new CompatibleRouteResponse("id", "LIS", "OPO", 400, 100, true);
         when(getCompatibleRoutesUseCase.execute("CS-TPA")).thenReturn(List.of(routeResponse));
 
-        // Act
         ResponseEntity<CollectionModel<EntityModel<CompatibleRouteResponse>>> response = controller.getCompatibleRoutes("CS-TPA");
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }

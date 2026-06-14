@@ -34,7 +34,6 @@ class GetFleetStatusUseCaseTest {
         assertEquals(1L, response.statusCounts().get(AircraftStatus.AVAILABLE.name()));
         assertEquals(1L, response.statusCounts().get(AircraftStatus.IN_FLIGHT.name()));
 
-        // Garante que os estados vazios também estão no JSON do Dashboard com valor 0
         assertEquals(0L, response.statusCounts().get(AircraftStatus.UNDER_MAINTENANCE.name()));
     }
 }
