@@ -1,5 +1,6 @@
 $kind: http-request
-url: "{{base_url}}/api/aircraft-models/B737-800"
+name: US201 - Update Aircraft Model Specs
+url: "{{base_url}}/api/aircraft-models/B737-9"
 method: PATCH
 headers:
   Content-Type: application/json

@@ -76,7 +76,7 @@ public class Bootstrap implements CommandLineRunner {
 
         RegistrationNumber regE195 = new RegistrationNumber("CS-TTY");
         if (aircraftRepository.findByRegistrationNumber(regE195).isEmpty()) {
-            aircraftRepository.save(new Aircraft(regE195, embraerE195, LocalDate.of(2023, 5, 10), 136, AircraftStatus.AVAILABLE, 600, 210));
+            aircraftRepository.save(new Aircraft(regE195, embraerE195, LocalDate.of(2023, 5, 10), 136, AircraftStatus.AVAILABLE, 600, 500));
         }
 //Testing Routes for WP#1B
         if (!routeRepository.existsActiveRouteBetween("LIS", "OPO")) {

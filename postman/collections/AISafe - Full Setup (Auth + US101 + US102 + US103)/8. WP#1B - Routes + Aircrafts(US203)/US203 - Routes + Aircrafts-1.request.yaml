@@ -1,5 +1,5 @@
 $kind: http-request
-name: US203.md - Routes + Aircrafts
+name: US203 - Routes + Aircrafts
 url: "{{base_url}}/api/aircrafts/CS-TXA/compatible-routes"
 method: GET
 headers:
