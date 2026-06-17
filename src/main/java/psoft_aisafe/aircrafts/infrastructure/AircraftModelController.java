@@ -38,14 +38,17 @@ public class AircraftModelController {
         this.getTopUtilizedModelsUseCase = getTopUtilizedModelsUseCase;
     }
 
-    @PostMapping
-    @Operation(summary = "Register Aircraft Model (US101 / US202)")
-    @ApiResponse(responseCode = "201", description = "CREATED")
-    public ResponseEntity<EntityModel<AircraftModelResponse>> registerModel(@RequestBody @Valid RegisterAircraftModelRequest request) {
-        AircraftModelResponse registeredModel = registerAircraftModelUseCase.execute(request);
-        EntityModel<AircraftModelResponse> modelRepresentation = EntityModel.of(registeredModel,
-                linkTo(methodOn(AircraftModelController.class).listModels()).withRel("all-models"));
-        return ResponseEntity.status(HttpStatus.CREATED).body(modelRepresentation);
+    @org.springframework.web.bind.annotation.PostMapping(consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @io.swagger.v3.oas.annotations.Operation(summary = "Register a new aircraft model with an image file")
+    public org.springframework.http.ResponseEntity<org.springframework.hateoas.EntityModel<psoft_aisafe.aircrafts.application.dtos.AircraftModelResponse>> registerAircraftModel(
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.ModelAttribute psoft_aisafe.aircrafts.application.dtos.RegisterAircraftModelRequest request,
+            @org.springframework.web.bind.annotation.RequestParam(value = "file", required = false) org.springframework.web.multipart.MultipartFile file) {
+
+        psoft_aisafe.aircrafts.application.dtos.AircraftModelResponse savedModel = registerAircraftModelUseCase.execute(request, file);
+
+        org.springframework.hateoas.EntityModel<psoft_aisafe.aircrafts.application.dtos.AircraftModelResponse> resource = org.springframework.hateoas.EntityModel.of(savedModel);
+
+        return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(resource);
     }
 
     @GetMapping

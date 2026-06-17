@@ -1,15 +1,9 @@
 @startuml
-autonumber
-actor "Backoffice Operator" as BO
-participant ":System" as System
+actor "Backoffice Operator" as Operator
+participant "System" as System
 
-activate BO
-BO -> System : registerAircraftModel(manufacturer, modelName, fuelCapacity,\n maximumRange, cruisingSpeed, technicalDiagramUrl)
+Operator -> System: POST /api/aircraft-models (form-data)
 activate System
-
-note right of System: The system validates the input,\nhandles the optional diagram URL,\nand registers the new model.
-
-System --> BO : informs operation success and returns created model
+System --> Operator: 201 Created (Model details + Image URL)
 deactivate System
-deactivate BO
 @enduml

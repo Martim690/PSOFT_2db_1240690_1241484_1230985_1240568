@@ -20,9 +20,10 @@ public class ListAircraftModelsUseCase {
                 .stream()
                 .map(model -> {
                     String diagram = model.getTechnicalDiagramUrl();
-                    if (diagram == null || diagram.trim().isEmpty()) {
-                        diagram = "empty";
-                    }
+
+                    String finalUrl = (diagram == null || diagram.equals("empty.png") || diagram.equals("empty"))
+                            ? ""
+                            : "http://localhost:8080/diagrams/" + diagram;
 
                     return new AircraftModelResponse(
                             model.getModelName(),
@@ -30,7 +31,7 @@ public class ListAircraftModelsUseCase {
                             model.getFuelCapacity(),
                             model.getMaximumRange(),
                             model.getCruisingSpeed(),
-                            diagram
+                            finalUrl
                     );
                 })
                 .toList();

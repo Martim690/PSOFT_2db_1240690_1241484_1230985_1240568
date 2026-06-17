@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import psoft_aisafe.aircrafts.application.GetTopUtilizedModelsUseCase;
@@ -17,6 +18,7 @@ import psoft_aisafe.aircrafts.domain.AircraftManufacturer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,13 +33,15 @@ class AircraftModelControllerTest {
 
     @Test
     void shouldReturn201CreatedWhenRegisteringModel() {
-        RegisterAircraftModelRequest request = new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B777", 100, 100, 100, "url.png");
+        RegisterAircraftModelRequest request = new RegisterAircraftModelRequest(
+                AircraftManufacturer.BOEING, "B777", 100, 100, 100);
 
-        AircraftModelResponse expectedResponse = new AircraftModelResponse("B777", "BOEING", 100, 100, 100, "url.png");
+        AircraftModelResponse expectedResponse = new AircraftModelResponse(
+                "B777", "BOEING", 100, 100, 100, "http://localhost:8080/diagrams/b777.png");
 
-        when(registerUseCase.execute(any(RegisterAircraftModelRequest.class))).thenReturn(expectedResponse);
+        when(registerUseCase.execute(eq(request), eq(null))).thenReturn(expectedResponse);
 
-        ResponseEntity<?> response = controller.registerModel(request);
+        ResponseEntity<EntityModel<AircraftModelResponse>> response = controller.registerAircraftModel(request, null);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
