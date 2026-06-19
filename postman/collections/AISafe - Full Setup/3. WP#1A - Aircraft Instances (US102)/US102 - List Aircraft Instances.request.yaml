@@ -1,0 +1,33 @@
+$kind: http-request
+name: US102 - List Aircraft Instances
+url: "{{base_url}}/api/aircrafts"
+method: GET
+headers:
+  Authorization: Bearer {{jwt_token}}
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 200 OK\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Returns a list of aircraft\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    \r
+
+      \    var list = Array.isArray(jsonData) ? jsonData : \r
+
+      \               (jsonData._embedded ? Object.values(jsonData._embedded)[0] : []);\r
+
+      \               \r
+
+      \    pm.expect(list).to.be.an(\"array\");\r
+
+      });"
+    language: text/javascript
+order: 2000

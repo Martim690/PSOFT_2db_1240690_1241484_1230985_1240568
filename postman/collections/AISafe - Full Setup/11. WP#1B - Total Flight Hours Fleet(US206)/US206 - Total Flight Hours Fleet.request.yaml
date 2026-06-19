@@ -43,8 +43,6 @@ scripts:
 
       \            \r
 
-      \            // Verifica o link gerado para os detalhes do avião\r
-
       \            pm.expect(firstItem._links).to.have.property(\"aircraft-details\");\r
 
       \        }\r

@@ -105,7 +105,7 @@ public class AircraftController {
     }
 
     @GetMapping("/{registrationNumber}/compatible-routes")
-    @Operation(summary = "View active routes compatible with a specific aircraft (US203.md)")
+    @Operation(summary = "View active routes compatible with a specific aircraft (US203)")
     public ResponseEntity<CollectionModel<EntityModel<CompatibleRouteResponse>>> getCompatibleRoutes(@PathVariable String registrationNumber) {
 
         List<CompatibleRouteResponse> compatibleRoutes = getCompatibleRoutesUseCase.execute(registrationNumber);
@@ -130,15 +130,9 @@ public class AircraftController {
 
     @GetMapping("/fleet-status")
     @Operation(summary = "Get Fleet Status Report Dashboard (US205)")
-    public ResponseEntity<EntityModel<FleetStatusResponse>> getFleetStatus() {
-
-        FleetStatusResponse report = getFleetStatusUseCase.execute();
-
-        EntityModel<FleetStatusResponse> modelRepresentation = EntityModel.of(report,
-                linkTo(methodOn(AircraftController.class).getFleetStatus()).withSelfRel(),
-                linkTo(methodOn(AircraftController.class).listAircrafts()).withRel("all-aircrafts"));
-
-        return ResponseEntity.ok(modelRepresentation);
+    public ResponseEntity<FleetStatusResponse> getFleetStatus() {
+        FleetStatusResponse response = getFleetStatusUseCase.execute();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/operational-hours")

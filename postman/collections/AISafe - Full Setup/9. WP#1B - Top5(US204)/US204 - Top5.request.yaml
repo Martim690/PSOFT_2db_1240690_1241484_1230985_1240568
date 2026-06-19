@@ -1,6 +1,6 @@
 $kind: http-request
 name: US204 - Top5
-url: "{{base_url}}/api/aircraft-models/top-utilized?sortBy=hours&sortBy=assignments"
+url: "{{base_url}}/api/aircraft-models/top-utilized"
 method: GET
 headers:
   Content-Type: application/json
@@ -8,11 +8,13 @@ headers:
 queryParams:
   - key: sortBy
     value: hours
+    disabled: true
   - key: sortBy
     value: assignments
+    disabled: true
 scripts:
   - type: afterResponse
-    code: "// 1. Validar que o código de estado HTTP é 200 OK\r
+    code: "\r
 
       pm.test(\"Status code is 200 OK\", function () {\r
 
@@ -21,8 +23,6 @@ scripts:
       });\r
 
       \r
-
-      // 2. Validar que a resposta é um JSON válido\r
 
       pm.test(\"Response is a valid JSON\", function () {\r
 
@@ -33,8 +33,6 @@ scripts:
       });\r
 
       \r
-
-      // 3. Validar a presença dos links estruturais do HATEOAS\r
 
       pm.test(\"Response contains valid HATEOAS links\", function () {\r
 
@@ -48,21 +46,15 @@ scripts:
 
       \r
 
-      // 4. Validar as regras de negócio e estrutura do Top 5\r
-
       pm.test(\"Top 5 list is present and structured correctly\", function () {\r
 
       \    var jsonData = pm.response.json();\r
 
       \    \r
 
-      \    // Verifica se os dados agrupados estão presentes\r
-
       \    pm.expect(jsonData).to.have.property(\"_embedded\");\r
 
       \    \r
-
-      \    // O HATEOAS do Spring nomeia a lista com base no DTO (topUtilizedModelResponseList)\r
 
       \    var topModels = jsonData._embedded.topUtilizedModelResponseList;\r
 
@@ -70,13 +62,9 @@ scripts:
 
       \    \r
 
-      \    // REGRA DE NEGÓCIO DA US204: O tamanho máximo da lista tem de ser 5\r
-
       \    pm.expect(topModels.length).to.be.at.most(5);\r
 
       \    \r
-
-      \    // Se a base de dados tiver modelos, valida a estrutura do primeiro item\r
 
       \    if (topModels.length > 0) {\r
 

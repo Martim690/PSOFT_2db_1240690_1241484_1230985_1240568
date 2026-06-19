@@ -1,4 +1,5 @@
 $kind: collection
+name: AISafe - Full Setup
 description: Coleção completa contendo Autenticação, US101 (Modelos), US102 (Instâncias por Matrícula) e US103 (Detalhes por Matrícula).
 variables:
   base_url: http://localhost:8080

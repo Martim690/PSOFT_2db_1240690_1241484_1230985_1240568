@@ -1,0 +1,49 @@
+$kind: http-request
+name: US103 - Get Aircraft Details by Registration
+url: "{{base_url}}/api/aircrafts/CS-TPA"
+method: GET
+headers:
+  Authorization: Bearer {{jwt_token}}
+scripts:
+  - type: afterResponse
+    code: "// 1. Check if the request was successful\r
+
+      pm.test(\"Status code is 200 OK\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      // 2. Validate the returned aircraft details\r
+
+      pm.test(\"Returns complete aircraft details\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    var data = jsonData.content ? jsonData.content : jsonData;\r
+
+      \    \r
+
+      \    pm.expect(data).to.have.property(\"registrationNumber\");\r
+
+      \    \r
+
+      \    // Na tua API chama-se 'model' em vez de 'modelName'\r
+
+      \    pm.expect(data).to.have.property(\"model\");\r
+
+      \    \r
+
+      \    // Na tua API chama-se 'seatingCapacity' em vez de 'passengerCapacity'\r
+
+      \    pm.expect(data).to.have.property(\"seatingCapacity\");\r
+
+      \    \r
+
+      \    pm.expect(data).to.have.property(\"currentStatus\");\r
+
+      });"
+    language: text/javascript
+order: 1000

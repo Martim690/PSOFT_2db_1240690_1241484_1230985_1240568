@@ -10,7 +10,7 @@ body:
   content: ""
 scripts:
   - type: afterResponse
-    code: "// 1. Validar que o código de estado HTTP é 200 OK\r
+    code: "\r
 
       pm.test(\"Status code is 200 OK\", function () {\r
 
@@ -19,8 +19,6 @@ scripts:
       });\r
 
       \r
-
-      // 2. Validar que a resposta é um JSON válido\r
 
       pm.test(\"Response is a valid JSON\", function () {\r
 
@@ -31,8 +29,6 @@ scripts:
       });\r
 
       \r
-
-      // 3. Validar a estrutura HATEOAS global e os links do endpoint\r
 
       pm.test(\"Response contains self links\", function () {\r
 

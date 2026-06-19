@@ -55,15 +55,22 @@ class AircraftControllerTest {
     }
 
     @Test
-    void shouldReturn200OkWhenListingFleetStatus() {
-        FleetStatusResponse expectedResponse = new FleetStatusResponse(10, Map.of("AVAILABLE", 10L));
-        when(getFleetStatusUseCase.execute()).thenReturn(expectedResponse);
+    void shouldReturnFleetStatusSuccessfully() {
+        java.util.Map<String, Long> mockCounts = java.util.Map.of("AVAILABLE", 2L, "IN_FLIGHT", 1L);
+        java.util.List<psoft_aisafe.aircrafts.application.dtos.FleetStatusResponse.AircraftStatusDetail> mockDetails =
+                java.util.List.of(new psoft_aisafe.aircrafts.application.dtos.FleetStatusResponse.AircraftStatusDetail("CS-TXA", "AVAILABLE"));
 
-        ResponseEntity<EntityModel<FleetStatusResponse>> response = controller.getFleetStatus();
+        psoft_aisafe.aircrafts.application.dtos.FleetStatusResponse mockResponse =
+                new psoft_aisafe.aircrafts.application.dtos.FleetStatusResponse(mockCounts, mockDetails);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        when(getFleetStatusUseCase.execute()).thenReturn(mockResponse);
+
+        org.springframework.http.ResponseEntity<psoft_aisafe.aircrafts.application.dtos.FleetStatusResponse> response = controller.getFleetStatus();
+
+        assertEquals(org.springframework.http.HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(10, response.getBody().getContent().totalAircraft());
+        assertEquals(2L, response.getBody().statusCounts().get("AVAILABLE"));
+        assertEquals("CS-TXA", response.getBody().aircrafts().get(0).registrationNumber());
     }
 
     @Test

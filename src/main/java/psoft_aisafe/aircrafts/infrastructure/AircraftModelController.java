@@ -39,7 +39,7 @@ public class AircraftModelController {
     }
 
     @org.springframework.web.bind.annotation.PostMapping(consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
-    @io.swagger.v3.oas.annotations.Operation(summary = "Register a new aircraft model with an image file")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Register Aircraft Model with an image file(US101 / US202)")
     public org.springframework.http.ResponseEntity<org.springframework.hateoas.EntityModel<psoft_aisafe.aircrafts.application.dtos.AircraftModelResponse>> registerAircraftModel(
             @jakarta.validation.Valid @org.springframework.web.bind.annotation.ModelAttribute psoft_aisafe.aircrafts.application.dtos.RegisterAircraftModelRequest request,
             @org.springframework.web.bind.annotation.RequestParam(value = "file", required = false) org.springframework.web.multipart.MultipartFile file) {

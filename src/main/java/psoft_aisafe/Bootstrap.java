@@ -55,13 +55,13 @@ public class Bootstrap implements CommandLineRunner {
         }
 //Aircraft Model
         AircraftModel airbusA350 = aircraftModelRepository.findByModelName("A350-900")
-                .orElseGet(() -> aircraftModelRepository.save(new AircraftModel("A350-900", 141000, 15000, 903, AircraftManufacturer.AIRBUS, "http://localhost:8080/diagrams/a350-900.png")));
+                .orElseGet(() -> aircraftModelRepository.save(new AircraftModel("A350-900", 141000, 15000, 903, AircraftManufacturer.AIRBUS, "a350-900.png")));
 
         AircraftModel boeing787 = aircraftModelRepository.findByModelName("B787-9")
-                .orElseGet(() -> aircraftModelRepository.save(new AircraftModel("B787-9", 126220, 14140, 903, AircraftManufacturer.BOEING, "http://localhost:8080/diagrams/b787-9.png")));
+                .orElseGet(() -> aircraftModelRepository.save(new AircraftModel("B787-9", 126220, 14140, 903, AircraftManufacturer.BOEING, "b787-9.png")));
 
         AircraftModel embraerE195 = aircraftModelRepository.findByModelName("E195-E2")
-                .orElseGet(() -> aircraftModelRepository.save(new AircraftModel("E195-E2", 13690, 4815, 870, AircraftManufacturer.EMBRAER, "http://localhost:8080/diagrams/e195-e2.png")));
+                .orElseGet(() -> aircraftModelRepository.save(new AircraftModel("E195-E2", 13690, 4815, 870, AircraftManufacturer.EMBRAER, "e195-e2.png")));
 
 //Aircraft
         RegistrationNumber regA350 = new RegistrationNumber("CS-TXA");
