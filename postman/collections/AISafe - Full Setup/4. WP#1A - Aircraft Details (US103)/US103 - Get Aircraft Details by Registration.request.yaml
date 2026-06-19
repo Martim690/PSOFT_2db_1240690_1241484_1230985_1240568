@@ -6,17 +6,13 @@ headers:
   Authorization: Bearer {{jwt_token}}
 scripts:
   - type: afterResponse
-    code: "// 1. Check if the request was successful\r
-
-      pm.test(\"Status code is 200 OK\", function () {\r
+    code: "pm.test(\"Status code is 200 OK\", function () {\r
 
       \    pm.response.to.have.status(200);\r
 
       });\r
 
       \r
-
-      // 2. Validate the returned aircraft details\r
 
       pm.test(\"Returns complete aircraft details\", function () {\r
 
@@ -30,13 +26,9 @@ scripts:
 
       \    \r
 
-      \    // Na tua API chama-se 'model' em vez de 'modelName'\r
-
       \    pm.expect(data).to.have.property(\"model\");\r
 
-      \    \r
-
-      \    // Na tua API chama-se 'seatingCapacity' em vez de 'passengerCapacity'\r
+      \r
 
       \    pm.expect(data).to.have.property(\"seatingCapacity\");\r
 
