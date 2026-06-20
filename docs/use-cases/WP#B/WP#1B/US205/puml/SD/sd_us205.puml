@@ -1,35 +1,35 @@
 @startuml
 autonumber
-actor "ATCC/Admin" as ATCC
-participant "AircraftController" as Ctrl
-participant "GetFleetStatusUseCase" as UC
+skinparam packageStyle rectangle
+
+actor "ATCC Operator" as ATCC
+participant "AircraftController" as Controller
+participant "GetFleetStatusUseCase" as UseCase
 participant "AircraftRepository" as Repo
-database "Database" as DB
+participant "FleetStatusResponse" as ResponseDTO
 
-ATCC -> Ctrl : GET /api/aircrafts/fleet-status
-activate Ctrl
+ATCC -> Controller: GET /api/aircrafts/fleet-status
+activate Controller
 
-Ctrl -> UC : execute()
-activate UC
+Controller -> UseCase: execute()
+activate UseCase
 
-UC -> Repo : findAll()
+UseCase -> Repo: findAll()
 activate Repo
-
-Repo -> DB : SELECT * FROM aircrafts
-activate DB
-DB --> Repo : list of all aircraft instances
-deactivate DB
-
-Repo --> UC : fleetList
+Repo --> UseCase: List<Aircraft> allAircrafts
 deactivate Repo
 
-note right of UC: Computes total aircraft.\nGroups entities by status.\nFills empty statuses with 0 count.
+note right of UseCase: 1. Streams groupingBy count()\n2. Streams map to details
 
-UC -> UC : create FleetStatusResponse
+UseCase -> ResponseDTO**: create(counts, details)
+activate ResponseDTO
+ResponseDTO --> UseCase: fleetStatusResponse
+deactivate ResponseDTO
 
-UC --> Ctrl : fleetStatusResponse
-deactivate UC
+UseCase --> Controller: fleetStatusResponse
+deactivate UseCase
 
-Ctrl --> ATCC : 200 OK (JSON Response)
-deactivate Ctrl
+Controller --> ATCC: 200 OK (JSON Payload)
+deactivate Controller
+
 @enduml

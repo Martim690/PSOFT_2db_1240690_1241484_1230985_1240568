@@ -1,0 +1,54 @@
+$kind: http-request
+name: US205 - Status
+url: "{{base_url}}/api/aircrafts/fleet-status"
+method: GET
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{jwt_token}}
+scripts:
+  - type: afterResponse
+    code: "\r
+
+      pm.test(\"Status code is 200 OK\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r
+
+      pm.test(\"Caunts and List\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    \r
+
+      \    pm.expect(jsonData).to.have.property(\"statusCounts\");\r
+
+      \    pm.expect(jsonData.statusCounts).to.be.an(\"object\");\r
+
+      \    \r
+
+      \    pm.expect(jsonData).to.have.property(\"aircrafts\");\r
+
+      \    pm.expect(jsonData.aircrafts).to.be.an(\"array\");\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Valid keys\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    \r
+
+      \    if(jsonData.aircrafts.length > 0) {\r
+
+      \        var keys = Object.keys(jsonData.statusCounts);\r
+
+      \        pm.expect(keys.length).to.be.above(0);\r
+
+      \    }\r
+
+      });"
+    language: text/javascript
+order: 1781352202518

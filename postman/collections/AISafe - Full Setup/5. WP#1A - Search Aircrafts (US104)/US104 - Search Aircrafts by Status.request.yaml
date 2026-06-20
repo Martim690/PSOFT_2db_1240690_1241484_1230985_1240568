@@ -1,0 +1,70 @@
+$kind: http-request
+name: US104 - Search Aircrafts by Status
+url: "{{base_url}}/api/aircrafts/search?status=IN_FLIGHT"
+method: GET
+headers:
+  Authorization: Bearer {{jwt_token}}
+queryParams:
+  - key: model
+    value: B737-800
+    disabled: true
+  - key: status
+    value: IN_FLIGHT
+  - key: year
+    value: "2020"
+    disabled: true
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 200 OK\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Search returns an array of results\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    var list = Array.isArray(jsonData) ? jsonData : \r
+
+      \               (jsonData._embedded ? Object.values(jsonData._embedded)[0] : []);\r
+
+      \               \r
+
+      \    pm.expect(list).to.be.an(\"array\");\r
+
+      });\r
+
+      \r
+
+      pm.test(\"All results match the search criteria\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    var list = Array.isArray(jsonData) ? jsonData : \r
+
+      \               (jsonData._embedded ? Object.values(jsonData._embedded)[0] : []);\r
+
+      \               \r
+
+      \    var requestedStatus = pm.request.url.query.get(\"status\");\r
+
+      \    \r
+
+      \    if (requestedStatus && list.length > 0) {\r
+
+      \        list.forEach(function(aircraft) {\r
+
+      \        \r
+
+      \            pm.expect(aircraft.currentStatus).to.eql(requestedStatus);\r
+
+      \        });\r
+
+      \    }\r
+
+      });"
+    language: text/javascript
+order: 1000

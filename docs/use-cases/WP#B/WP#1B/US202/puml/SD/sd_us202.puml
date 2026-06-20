@@ -1,47 +1,31 @@
 @startuml
 autonumber
-actor "Backoffice Operator/Admin" as BO
-participant "AircraftModelController" as Ctrl
-participant "RegisterAircraftModelUseCase" as UC
-participant "AircraftModel\n(Entity)" as Entity
+actor "Backoffice Operator/Admin" as Operator
+participant "AircraftModelController" as Controller
+participant "RegisterAircraftModelUseCase" as UseCase
+participant "FileSystem (I/O)" as Disk
 participant "AircraftModelRepository" as Repo
-database "Database" as DB
 
-BO -> Ctrl : POST /api/aircraft-models (JSON)
-activate Ctrl
+Operator -> Controller: POST /api/aircraft-models (multipart)
+activate Controller
 
-Ctrl -> UC : execute(request)
-activate UC
+Controller -> UseCase: execute(dto, file)
+activate UseCase
 
-note right of UC: Extracts data from DTO\nincluding optional diagram URL
+UseCase -> Repo: findByModelName()
+Repo --> UseCase: Optional.empty
 
-UC -> Repo : findByModelName(request.modelName)
-activate Repo
-Repo --> UC : Optional.empty()
-deactivate Repo
+alt if file exists
+    UseCase -> Disk: copy(file, path)
+    Disk --> UseCase: success
+end
 
-UC -> Entity ** : new AircraftModel(name, fuel, range, speed, manufacturer, diagramUrl)
-activate Entity
+UseCase -> Repo: save(model)
+Repo --> UseCase: savedModel
 
-note right of Entity: Domain validation occurs here.\nIf diagramUrl is null, sets to "empty".
+UseCase --> Controller: AircraftModelResponse
+deactivate UseCase
 
-Entity --> UC : aircraftModel (validated object)
-deactivate Entity
-
-UC -> Repo : save(aircraftModel)
-activate Repo
-
-Repo -> DB : INSERT INTO aircraft_models (...)
-activate DB
-DB --> Repo : saved record (with auto-generated ID)
-deactivate DB
-
-Repo --> UC : savedModel
-deactivate Repo
-
-UC --> Ctrl : savedModelResponse
-deactivate UC
-
-Ctrl --> BO : 201 Created (JSON Response)
-deactivate Ctrl
+Controller --> Operator: 201 Created
+deactivate Controller
 @enduml

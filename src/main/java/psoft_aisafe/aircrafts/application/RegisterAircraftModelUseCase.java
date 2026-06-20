@@ -1,42 +1,67 @@
 package psoft_aisafe.aircrafts.application;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import psoft_aisafe.aircrafts.application.dtos.AircraftModelResponse;
 import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftModelRequest;
 import psoft_aisafe.aircrafts.domain.AircraftModel;
 import psoft_aisafe.aircrafts.domain.AircraftModelRepository;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
 @Service
 public class RegisterAircraftModelUseCase {
 
-    private final AircraftModelRepository modelRepository;
+    private final AircraftModelRepository repository;
+    private final String UPLOAD_DIR = "uploads/diagrams/";
 
-    public RegisterAircraftModelUseCase(AircraftModelRepository modelRepository) {
-        this.modelRepository = modelRepository;
+    public RegisterAircraftModelUseCase(AircraftModelRepository repository) {
+        this.repository = repository;
     }
 
-    @Transactional
-    public AircraftModelResponse execute(RegisterAircraftModelRequest request) {
-        if (modelRepository.findByModelName(request.modelName()).isPresent()) {
-            throw new IllegalArgumentException("Aircraft model already exists: " + request.modelName());
+    public AircraftModelResponse execute(RegisterAircraftModelRequest request, MultipartFile file) {
+        if (repository.findByModelName(request.modelName()).isPresent()) {
+            throw new IllegalArgumentException("Model name already exists.");
         }
 
-        AircraftModel newModel = new AircraftModel(
+        String diagramFileName = "empty.png";
+
+        if (file != null && !file.isEmpty()) {
+            try {
+                Files.createDirectories(Paths.get(UPLOAD_DIR));
+
+                String originalName = file.getOriginalFilename();
+                String extension = "";
+                if (originalName != null && originalName.contains(".")) {
+                    extension = originalName.substring(originalName.lastIndexOf("."));
+                }
+
+                diagramFileName = request.modelName().replaceAll("\\s+", "-").toLowerCase() + extension;
+                Path targetLocation = Paths.get(UPLOAD_DIR + diagramFileName);
+
+                Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+            } catch (IOException e) {
+                throw new RuntimeException("Could not store file. Please try again!", e);
+            }
+        }
+
+        AircraftModel model = new AircraftModel(
                 request.modelName(),
                 request.fuelCapacity(),
                 request.maximumRange(),
                 request.cruisingSpeed(),
                 request.manufacturer(),
-                request.technicalDiagramUrl()
+                diagramFileName
         );
 
-        AircraftModel savedModel = modelRepository.save(newModel);
+        AircraftModel savedModel = repository.save(model);
 
-        String finalDiagram = savedModel.getTechnicalDiagramUrl();
-        if (finalDiagram == null || finalDiagram.trim().isEmpty()) {
-            finalDiagram = "empty";
-        }
+        String finalUrl = savedModel.getTechnicalDiagramUrl().equals("empty.png") ? "" : "http://localhost:8080/diagrams/" + savedModel.getTechnicalDiagramUrl();
 
         return new AircraftModelResponse(
                 savedModel.getModelName(),
@@ -44,7 +69,7 @@ public class RegisterAircraftModelUseCase {
                 savedModel.getFuelCapacity(),
                 savedModel.getMaximumRange(),
                 savedModel.getCruisingSpeed(),
-                finalDiagram
+                finalUrl
         );
     }
 }

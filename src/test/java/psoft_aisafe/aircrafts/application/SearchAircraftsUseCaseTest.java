@@ -24,7 +24,7 @@ class SearchAircraftsUseCaseTest {
 
     @Test
     void shouldSearchAircraftsInDatabase() {
-        registerModelUseCase.execute(new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 20000, 5000, 800,null));
+        registerModelUseCase.execute(new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 20000, 5000, 800), null);
         registerAircraftUseCase.execute(new RegisterAircraftRequest("CS-SRC1", "B737", LocalDate.now(), 180, AircraftStatus.IN_FLIGHT));
         registerAircraftUseCase.execute(new RegisterAircraftRequest("CS-SRC2", "B737", LocalDate.now(), 180, AircraftStatus.AVAILABLE));
 

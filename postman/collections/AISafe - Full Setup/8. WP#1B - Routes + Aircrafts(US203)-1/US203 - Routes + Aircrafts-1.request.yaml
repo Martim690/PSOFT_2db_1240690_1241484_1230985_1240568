@@ -1,0 +1,43 @@
+$kind: http-request
+name: US203 - Routes + Aircrafts
+url: "{{base_url}}/api/aircrafts/CS-TXA/compatible-routes"
+method: GET
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: json
+  content: ""
+scripts:
+  - type: afterResponse
+    code: "\r
+
+      pm.test(\"Status code is 200 OK\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Response is a valid JSON\", function () {\r
+
+      \    pm.response.to.be.withBody;\r
+
+      \    pm.response.to.be.json;\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Response contains self links\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    pm.expect(jsonData).to.have.property(\"_links\");\r
+
+      \    pm.expect(jsonData._links).to.have.property(\"self\");\r
+
+      });"
+    language: text/javascript
+order: 2000

@@ -1,0 +1,87 @@
+$kind: http-request
+name: US204 - Top5
+url: "{{base_url}}/api/aircraft-models/top-utilized"
+method: GET
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{jwt_token}}
+queryParams:
+  - key: sortBy
+    value: hours
+    disabled: true
+  - key: sortBy
+    value: assignments
+    disabled: true
+scripts:
+  - type: afterResponse
+    code: "\r
+
+      pm.test(\"Status code is 200 OK\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Response is a valid JSON\", function () {\r
+
+      \    pm.response.to.be.withBody;\r
+
+      \    pm.response.to.be.json;\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Response contains valid HATEOAS links\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    pm.expect(jsonData).to.have.property(\"_links\");\r
+
+      \    pm.expect(jsonData._links).to.have.property(\"self\");\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Top 5 list is present and structured correctly\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    \r
+
+      \    pm.expect(jsonData).to.have.property(\"_embedded\");\r
+
+      \    \r
+
+      \    var topModels = jsonData._embedded.topUtilizedModelResponseList;\r
+
+      \    pm.expect(topModels).to.be.an('array');\r
+
+      \    \r
+
+      \    pm.expect(topModels.length).to.be.at.most(5);\r
+
+      \    \r
+
+      \    if (topModels.length > 0) {\r
+
+      \        var firstItem = topModels[0];\r
+
+      \        \r
+
+      \        pm.expect(firstItem).to.have.property(\"modelName\");\r
+
+      \        pm.expect(firstItem).to.have.property(\"manufacturer\");\r
+
+      \        pm.expect(firstItem).to.have.property(\"totalFlightHours\").that.is.a(\"number\");\r
+
+      \        pm.expect(firstItem).to.have.property(\"totalAssignments\").that.is.a(\"number\");\r
+
+      \    }\r
+
+      });"
+    language: text/javascript
+order: 1781316214660

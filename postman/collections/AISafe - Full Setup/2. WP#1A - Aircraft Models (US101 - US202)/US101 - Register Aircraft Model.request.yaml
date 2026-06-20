@@ -1,0 +1,83 @@
+$kind: http-request
+name: US101 - Register Aircraft Model
+url: "{{base_url}}/api/aircraft-models"
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+    disabled: true
+  - key: Authorization
+    value: Bearer {{jwt_token}}
+body:
+  type: formdata
+  content:
+    - type: text
+      key: manufacturer
+      value: BOEING
+      description: ""
+      disabled: false
+    - type: text
+      key: modelName
+      value: B777-29967
+      description: ""
+      disabled: false
+    - type: text
+      key: fuelCapacity
+      value: "320000"
+      description: ""
+      disabled: false
+    - type: text
+      key: maximumRange
+      value: "15000"
+      description: ""
+      disabled: false
+    - type: text
+      key: cruisingSpeed
+      value: "900"
+      description: ""
+      disabled: false
+    - type: file
+      key: file
+      src:
+        - /C:/Users/marti/Downloads/exemplob777-29967.png
+      description: ""
+      disabled: false
+scripts:
+  - type: afterResponse
+    code: "\r
+
+      pm.test(\"Status code is 201 Created\", function () {\r
+
+      \    pm.response.to.have.status(201);\r
+
+      });\r
+
+      \r
+
+      \r
+
+      pm.test(\"Saved Aircraft Model and image (Dynamic)\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    var responseData = jsonData.content ? jsonData.content : jsonData;\r
+
+      \    \r
+
+      \    var expectedModelName = pm.request.body.formdata.get(\"modelName\");\r
+
+      \    \r
+
+      \    pm.expect(responseData).to.have.property(\"modelName\");\r
+
+      \    pm.expect(responseData.modelName).to.eql(expectedModelName); \r
+
+      \    \r
+
+      \    pm.expect(responseData).to.have.property(\"technicalDiagramUrl\");\r
+
+      \    pm.expect(responseData.technicalDiagramUrl).to.include(\"/diagrams/\");\r
+
+      });"
+    language: text/javascript
+order: 1000

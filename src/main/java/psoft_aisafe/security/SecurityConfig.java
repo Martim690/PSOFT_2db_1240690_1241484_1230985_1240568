@@ -33,17 +33,24 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/diagrams/**").permitAll()
-                        //WP #1A
+
+
                         .requestMatchers(HttpMethod.POST, "/api/aircraft-models").hasAnyAuthority("BACKOFFICE_OPERATOR", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/aircrafts").hasAnyAuthority("ATCC", "ADMIN")
+
                         .requestMatchers(HttpMethod.GET, "/api/aircrafts/search").hasAnyAuthority("ATCC", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/aircrafts/*/compatible-routes").hasAnyAuthority("ATCC", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/aircrafts/operational-hours").hasAnyAuthority("ATCC", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/aircrafts/fleet-status").hasAnyAuthority("BACKOFFICE_OPERATOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/aircrafts/fleet-status").hasAnyAuthority("ATCC", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/aircraft-models/top-utilized").hasAnyAuthority("BACKOFFICE_OPERATOR", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/aircrafts/*").hasAnyAuthority("ATCC", "BACKOFFICE_OPERATOR", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/aircraft-models/**", "/api/aircrafts").hasAuthority("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/aircraft-models", "/api/aircraft-models/**").hasAnyAuthority("BACKOFFICE_OPERATOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/aircrafts").hasAnyAuthority("ATCC", "BACKOFFICE_OPERATOR", "ADMIN")
+
+                        .requestMatchers(HttpMethod.PATCH, "/api/aircraft-models/*").hasAnyAuthority("BACKOFFICE_OPERATOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/aircrafts/*/status").hasAnyAuthority("ATCC", "ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

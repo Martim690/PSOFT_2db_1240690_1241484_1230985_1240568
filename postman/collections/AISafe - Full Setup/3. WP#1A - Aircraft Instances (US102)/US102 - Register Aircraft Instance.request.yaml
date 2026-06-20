@@ -1,0 +1,52 @@
+$kind: http-request
+name: US102 - Register Aircraft Instance
+url: "{{base_url}}/api/aircrafts"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: text
+  content: |-
+    {
+      "registrationNumber": "CS-TPA",
+      "modelName": "B777-29967",
+      "manufacturingDate": "2022-03-15",
+      "seatingCapacity": 174,
+      "currentStatus": "AVAILABLE"
+    }
+scripts:
+  - type: afterResponse
+    code: "\r
+
+      pm.test(\"Status code is 201 Created\", function () {\r
+
+      \    pm.response.to.have.status(201);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Aircraft registered matching request body\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    var data = jsonData.content ? jsonData.content : jsonData;\r
+
+      \    \r
+
+      \    var requestBody = JSON.parse(pm.request.body.raw);\r
+
+      \    \r
+
+      \    pm.expect(data).to.have.property(\"registrationNumber\");\r
+
+      \    pm.expect(data.registrationNumber.number).to.eql(requestBody.registrationNumber); \r
+
+      \    \r
+
+      \    pm.expect(data).to.have.property(\"currentStatus\");\r
+
+      });\r\n"
+    language: text/javascript
+order: 1000

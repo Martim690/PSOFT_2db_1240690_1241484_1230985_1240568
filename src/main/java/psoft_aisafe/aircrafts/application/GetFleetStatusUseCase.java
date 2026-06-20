@@ -2,9 +2,8 @@ package psoft_aisafe.aircrafts.application;
 
 import org.springframework.stereotype.Service;
 import psoft_aisafe.aircrafts.application.dtos.FleetStatusResponse;
-import psoft_aisafe.aircrafts.domain.Aircraft;
 import psoft_aisafe.aircrafts.domain.AircraftRepository;
-import psoft_aisafe.aircrafts.domain.AircraftStatus;
+import psoft_aisafe.aircrafts.domain.Aircraft;
 
 import java.util.List;
 import java.util.Map;
@@ -20,19 +19,21 @@ public class GetFleetStatusUseCase {
     }
 
     public FleetStatusResponse execute() {
-        List<Aircraft> fleet = aircraftRepository.findAll();
-        long total = fleet.size();
+        List<Aircraft> allAircrafts = aircraftRepository.findAll();
 
-        Map<String, Long> statusCounts = fleet.stream()
+        Map<String, Long> counts = allAircrafts.stream()
                 .collect(Collectors.groupingBy(
                         a -> a.getCurrentStatus().name(),
                         Collectors.counting()
                 ));
 
-        for (AircraftStatus status : AircraftStatus.values()) {
-            statusCounts.putIfAbsent(status.name(), 0L);
-        }
+        List<FleetStatusResponse.AircraftStatusDetail> details = allAircrafts.stream()
+                .map(a -> new FleetStatusResponse.AircraftStatusDetail(
+                        a.getRegistrationNumber().getNumber(),
+                        a.getCurrentStatus().name()
+                ))
+                .toList();
 
-        return new FleetStatusResponse(total, statusCounts);
+        return new FleetStatusResponse(counts, details);
     }
 }

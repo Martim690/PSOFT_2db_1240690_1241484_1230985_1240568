@@ -1,0 +1,46 @@
+$kind: http-request
+name: US105 - Update Aircraft Status
+url: "{{base_url}}/api/aircrafts/CS-TPA"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: text
+  content: |-
+    {
+      "status": "UNDER_MAINTENANCE"
+    }
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 200 OK\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Aircraft status was updated successfully\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    var data = jsonData.content ? jsonData.content : jsonData;\r
+
+      \    \r
+
+      \    pm.expect(data).to.have.property(\"currentStatus\");\r
+
+      \    \r
+
+      \    var requestBody = JSON.parse(pm.request.body.raw);\r
+
+      \    \r
+
+      \    var expectedStatus = requestBody.status ? requestBody.status : ruesto\r
+
+      \    pm.expect(data.currentStatus).to.eql(expectedStatus);\r
+
+      });"
+    language: text/javascript
+order: 1000
