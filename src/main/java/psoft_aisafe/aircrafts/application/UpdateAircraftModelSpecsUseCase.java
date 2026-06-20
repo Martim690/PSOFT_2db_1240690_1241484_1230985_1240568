@@ -2,6 +2,7 @@ package psoft_aisafe.aircrafts.application;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import psoft_aisafe.aircrafts.application.dtos.AircraftModelResponse;
 import psoft_aisafe.aircrafts.application.dtos.UpdateAircraftModelSpecsRequest;
 import psoft_aisafe.aircrafts.domain.AircraftModel;
 import psoft_aisafe.aircrafts.domain.AircraftModelRepository;
@@ -16,7 +17,7 @@ public class UpdateAircraftModelSpecsUseCase {
     }
 
     @Transactional
-    public AircraftModel execute(String modelName, UpdateAircraftModelSpecsRequest request) {
+    public AircraftModelResponse execute(String modelName, UpdateAircraftModelSpecsRequest request) {
         AircraftModel model = modelRepository.findByModelName(modelName)
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft model not found: " + modelName));
 
@@ -26,6 +27,20 @@ public class UpdateAircraftModelSpecsUseCase {
 
         model.updateSpecifications(finalFuelCapacity, finalMaximumRange, finalCruisingSpeed);
 
-        return modelRepository.save(model);
+        AircraftModel savedModel = modelRepository.save(model);
+
+        String diagram = savedModel.getTechnicalDiagramUrl();
+        String finalUrl = (diagram == null || diagram.equals("empty.png") || diagram.equals("empty"))
+                ? ""
+                : "http://localhost:8080/diagrams/" + diagram;
+
+        return new AircraftModelResponse(
+                savedModel.getModelName(),
+                savedModel.getManufacturer().name(),
+                savedModel.getFuelCapacity(),
+                savedModel.getMaximumRange(),
+                savedModel.getCruisingSpeed(),
+                finalUrl
+        );
     }
 }

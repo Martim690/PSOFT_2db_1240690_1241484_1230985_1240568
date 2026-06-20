@@ -17,7 +17,7 @@ import java.nio.file.StandardCopyOption;
 public class RegisterAircraftModelUseCase {
 
     private final AircraftModelRepository repository;
-    private final String UPLOAD_DIR = "src/main/resources/static/diagrams/";
+    private final String UPLOAD_DIR = "uploads/diagrams/";
 
     public RegisterAircraftModelUseCase(AircraftModelRepository repository) {
         this.repository = repository;

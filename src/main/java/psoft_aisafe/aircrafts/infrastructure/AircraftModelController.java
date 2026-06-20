@@ -66,13 +66,13 @@ public class AircraftModelController {
 
     @PatchMapping("/{modelName}")
     @Operation(summary = "Update Aircraft Model Specifications (US201)")
-    public ResponseEntity<EntityModel<AircraftModel>> updateSpecs(
+    public ResponseEntity<EntityModel<AircraftModelResponse>> updateSpecs(
             @PathVariable String modelName,
             @RequestBody @Valid UpdateAircraftModelSpecsRequest request) {
 
-        AircraftModel updatedModel = updateAircraftModelSpecsUseCase.execute(modelName, request);
+        AircraftModelResponse updatedModel = updateAircraftModelSpecsUseCase.execute(modelName, request);
 
-        EntityModel<AircraftModel> modelRepresentation = EntityModel.of(updatedModel,
+        EntityModel<AircraftModelResponse> modelRepresentation = EntityModel.of(updatedModel,
                 linkTo(methodOn(AircraftModelController.class).updateSpecs(modelName, null)).withSelfRel(),
                 linkTo(methodOn(AircraftModelController.class).listModels()).withRel("all-models"));
 
