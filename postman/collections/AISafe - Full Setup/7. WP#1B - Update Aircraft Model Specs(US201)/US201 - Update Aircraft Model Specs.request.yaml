@@ -1,6 +1,6 @@
 $kind: http-request
 name: US201 - Update Aircraft Model Specs
-url: "{{base_url}}/api/aircraft-models/B737-9"
+url: "{{base_url}}/api/aircraft-models/B787-9"
 method: PATCH
 headers:
   Content-Type: application/json
@@ -13,6 +13,44 @@ scripts:
     code: "pm.test(\"Status code is 200 OK\", function () {\r
 
       \    pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Specs updated exactly as requested\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    var data = jsonData.content ? jsonData.content : jsonData;\r
+
+      \    \r
+
+      \    var requestBody = JSON.parse(pm.request.body.raw);\r
+
+      \    \r
+
+      \    if (requestBody.fuelCapacity !== undefined) {\r
+
+      \        pm.expect(data.fuelCapacity).to.eql(requestBody.fuelCapacity);\r
+
+      \    }\r
+
+      \    \r
+
+      \    if (requestBody.maximumRange !== undefined) {\r
+
+      \        pm.expect(data.maximumRange).to.eql(requestBody.maximumRange);\r
+
+      \    }\r
+
+      \    \r
+
+      \    if (requestBody.cruisingSpeed !== undefined) {\r
+
+      \        pm.expect(data.cruisingSpeed).to.eql(requestBody.cruisingSpeed);\r
+
+      \    }\r
 
       });"
     language: text/javascript

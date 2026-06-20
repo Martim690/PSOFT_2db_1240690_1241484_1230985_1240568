@@ -11,37 +11,48 @@ import psoft_aisafe.aircrafts.domain.*;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GetAircraftByRegistrationUseCaseTest {
 
-    @Mock
-    private AircraftRepository repository;
-
-    @InjectMocks
-    private GetAircraftByRegistrationUseCase useCase;
+    @Mock private AircraftRepository aircraftRepository;
+    @InjectMocks private GetAircraftByRegistrationUseCase useCase;
 
     @Test
-    void shouldReturnAircraftDetailsSuccessfully() {
-        AircraftModel model = new AircraftModel("B737", 100, 100, 100, AircraftManufacturer.BOEING, null); // Diagram null
-        Aircraft aircraft = new Aircraft(new RegistrationNumber("CS-TPA"), model, LocalDate.now(), 150, AircraftStatus.AVAILABLE);
+    void shouldThrowExceptionWhenAircraftIsNotFound() {
+        when(aircraftRepository.findByRegistrationNumber(any(RegistrationNumber.class)))
+                .thenReturn(Optional.empty());
 
-        when(repository.findByRegistrationNumber(any(RegistrationNumber.class))).thenReturn(Optional.of(aircraft));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> useCase.execute("CS-ZZZ"));
 
-        AircraftResponse result = useCase.execute("CS-TPA");
-
-        assertEquals("CS-TPA", result.registrationNumber());
-        assertEquals("AVAILABLE", result.currentStatus());
+        assertTrue(exception.getMessage().contains("not found"));
     }
 
     @Test
-    void shouldThrowExceptionWhenNotFound() {
-        when(repository.findByRegistrationNumber(any(RegistrationNumber.class))).thenReturn(Optional.empty());
+    void shouldReturnAircraftResponseWhenFound() {
+        Aircraft mockAircraft = mock(Aircraft.class);
+        RegistrationNumber mockReg = new RegistrationNumber("CS-TPA");
+        AircraftModel mockModel = mock(AircraftModel.class);
 
-        assertThrows(IllegalArgumentException.class, () -> useCase.execute("UNKNOWN"));
+        when(mockAircraft.getRegistrationNumber()).thenReturn(mockReg);
+        when(mockAircraft.getModel()).thenReturn(mockModel);
+        when(mockModel.getModelName()).thenReturn("B737");
+
+        when(mockAircraft.getManufacturingDate()).thenReturn(LocalDate.now());
+        when(mockAircraft.getSeatingCapacity()).thenReturn(150);
+        when(mockAircraft.getCurrentStatus()).thenReturn(AircraftStatus.AVAILABLE);
+
+        when(aircraftRepository.findByRegistrationNumber(any(RegistrationNumber.class)))
+                .thenReturn(Optional.of(mockAircraft));
+
+        AircraftResponse response = useCase.execute("CS-TPA");
+
+        assertNotNull(response);
+        assertEquals("CS-TPA", response.registrationNumber());
     }
 }

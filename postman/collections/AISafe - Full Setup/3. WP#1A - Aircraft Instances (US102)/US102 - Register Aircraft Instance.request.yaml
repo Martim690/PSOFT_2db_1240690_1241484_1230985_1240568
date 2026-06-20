@@ -27,26 +27,26 @@ scripts:
 
       \r
 
-      pm.test(\"Aircraft registered with registration number and model\", function () {\r
+      pm.test(\"Aircraft registered matching request body\", function () {\r
 
       \    var jsonData = pm.response.json();\r
-
-      \    \r
 
       \    var data = jsonData.content ? jsonData.content : jsonData;\r
 
       \    \r
 
+      \    var requestBody = JSON.parse(pm.request.body.raw);\r
+
+      \    \r
+
       \    pm.expect(data).to.have.property(\"registrationNumber\");\r
 
-      \    pm.expect(data.registrationNumber.number).to.eql(\"CS-TPA\"); \r
+      \    pm.expect(data.registrationNumber.number).to.eql(requestBody.registrationNumber); \r
 
       \    \r
 
       \    pm.expect(data).to.have.property(\"currentStatus\");\r
 
-      });\r
-
-      \r\n"
+      });\r\n"
     language: text/javascript
 order: 1000

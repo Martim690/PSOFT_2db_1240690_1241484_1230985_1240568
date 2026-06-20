@@ -56,19 +56,23 @@ scripts:
 
       \r
 
-      pm.test(\"Saved Aircraft Model and image\", function () {\r
+      pm.test(\"Saved Aircraft Model and image (Dynamic)\", function () {\r
 
       \    var jsonData = pm.response.json();\r
-
-      \r
 
       \    var responseData = jsonData.content ? jsonData.content : jsonData;\r
 
       \    \r
 
+      \    var expectedModelName = pm.request.body.formdata.get(\"modelName\");\r
+
+      \    \r
+
       \    pm.expect(responseData).to.have.property(\"modelName\");\r
 
-      \    pm.expect(responseData.modelName).to.eql(\"B777-29967\"); \r
+      \    pm.expect(responseData.modelName).to.eql(expectedModelName); \r
+
+      \    \r
 
       \    pm.expect(responseData).to.have.property(\"technicalDiagramUrl\");\r
 
