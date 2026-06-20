@@ -34,7 +34,7 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/diagrams/**").permitAll()
 
-
+                        //WP#1A & WP#1B
                         .requestMatchers(HttpMethod.POST, "/api/aircraft-models").hasAnyAuthority("BACKOFFICE_OPERATOR", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/aircrafts").hasAnyAuthority("ATCC", "ADMIN")
 
@@ -50,6 +50,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.PATCH, "/api/aircraft-models/*").hasAnyAuthority("BACKOFFICE_OPERATOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/aircrafts/*/status").hasAnyAuthority("ATCC", "ADMIN")
+                        //Space for other WP
 
                         .anyRequest().authenticated()
                 )
