@@ -14,17 +14,17 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class SearchAircraftsUseCaseTest {
+class ListAircraftsUseCaseTest {
 
     @Mock private AircraftRepository repository;
-    @InjectMocks private SearchAircraftsUseCase useCase;
+    @InjectMocks private ListAircraftsUseCase useCase;
 
-    @Test void returnsEmptyListWhenNoneMatch() {
-        when(repository.searchAircrafts(null, AircraftStatus.UNDER_MAINTENANCE, null)).thenReturn(Collections.emptyList());
-        assertTrue(useCase.execute(null, AircraftStatus.UNDER_MAINTENANCE, null).isEmpty());
+    @Test void returnsEmptyListWhenNoAircrafts() {
+        when(repository.findAll()).thenReturn(Collections.emptyList());
+        assertTrue(useCase.execute().isEmpty());
     }
 
-    @Test void returnsMatchingAircrafts() {
+    @Test void returnsListOfAircraftsWhenTheyExist() {
         Aircraft mockAircraft = mock(Aircraft.class);
         RegistrationNumber mockReg = mock(RegistrationNumber.class);
         AircraftModel mockModel = mock(AircraftModel.class);
@@ -32,9 +32,15 @@ class SearchAircraftsUseCaseTest {
         when(mockReg.getNumber()).thenReturn("CS-TPA");
         when(mockAircraft.getModel()).thenReturn(mockModel);
         when(mockModel.getModelName()).thenReturn("B737");
-        when(mockAircraft.getCurrentStatus()).thenReturn(AircraftStatus.IN_FLIGHT);
-        when(repository.searchAircrafts(null, AircraftStatus.IN_FLIGHT, null)).thenReturn(List.of(mockAircraft));
-        var result = useCase.execute(null, AircraftStatus.IN_FLIGHT, null);
+        when(mockAircraft.getCurrentStatus()).thenReturn(AircraftStatus.AVAILABLE);
+        when(repository.findAll()).thenReturn(List.of(mockAircraft));
+        var result = useCase.execute();
         assertEquals(1, result.size());
+    }
+
+    @Test void callsRepositoryFindAll() {
+        when(repository.findAll()).thenReturn(Collections.emptyList());
+        useCase.execute();
+        verify(repository, times(1)).findAll();
     }
 }

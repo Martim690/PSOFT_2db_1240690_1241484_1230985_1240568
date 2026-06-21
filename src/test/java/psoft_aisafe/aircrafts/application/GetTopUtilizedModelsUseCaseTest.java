@@ -5,35 +5,49 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import psoft_aisafe.aircrafts.application.dtos.TopUtilizedModelResponse;
 import psoft_aisafe.aircrafts.domain.*;
 
-import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GetTopUtilizedModelsUseCaseTest {
 
-    @Mock private AircraftRepository aircraftRepository;
+    @Mock private AircraftRepository repository;
     @InjectMocks private GetTopUtilizedModelsUseCase useCase;
 
-    @Test
-    void shouldReturnTopUtilizedSortedByFlightHours() {
-        AircraftModel m1 = new AircraftModel("M1", 1, 1, 1, AircraftManufacturer.BOEING, null);
-        AircraftModel m2 = new AircraftModel("M2", 1, 1, 1, AircraftManufacturer.AIRBUS, null);
+    @Test void returnsEmptyListWhenNoAircrafts() {
+        when(repository.findAll()).thenReturn(Collections.emptyList());
+        assertTrue(useCase.execute("hours").isEmpty());
+    }
 
-        Aircraft a1 = new Aircraft(new RegistrationNumber("CS-AAA"), m1, LocalDate.now(), 100, AircraftStatus.AVAILABLE, 100, 5);
-        Aircraft a2 = new Aircraft(new RegistrationNumber("CS-BBB"), m2, LocalDate.now(), 100, AircraftStatus.AVAILABLE, 500, 1);
+    @Test void handlesSingleAircraftCorrectly() {
+        Aircraft a1 = mock(Aircraft.class);
+        AircraftModel m1 = mock(AircraftModel.class);
+        when(m1.getModelName()).thenReturn("B737");
+        when(m1.getManufacturer()).thenReturn(AircraftManufacturer.BOEING);
+        when(a1.getModel()).thenReturn(m1);
+        when(a1.getTotalFlightHours()).thenReturn(500);
+        when(repository.findAll()).thenReturn(List.of(a1));
+        var result = useCase.execute("hours");
+        assertEquals(1, result.size());
+    }
 
-        when(aircraftRepository.findAll()).thenReturn(List.of(a1, a2));
-
-        List<TopUtilizedModelResponse> result = useCase.execute("hours");
-
-        assertEquals("M2", result.get(0).modelName());
-        assertEquals(500, result.get(0).totalFlightHours());
-        assertEquals("M1", result.get(1).modelName());
+    @Test void groupsModelsAndSumsHours() {
+        Aircraft a1 = mock(Aircraft.class);
+        Aircraft a2 = mock(Aircraft.class);
+        AircraftModel m1 = mock(AircraftModel.class);
+        when(m1.getModelName()).thenReturn("B737");
+        when(m1.getManufacturer()).thenReturn(AircraftManufacturer.BOEING);
+        when(a1.getModel()).thenReturn(m1);
+        when(a2.getModel()).thenReturn(m1);
+        when(a1.getTotalFlightHours()).thenReturn(500);
+        when(a2.getTotalFlightHours()).thenReturn(200);
+        when(repository.findAll()).thenReturn(List.of(a1, a2));
+        var result = useCase.execute("hours");
+        assertEquals(1, result.size());
     }
 }

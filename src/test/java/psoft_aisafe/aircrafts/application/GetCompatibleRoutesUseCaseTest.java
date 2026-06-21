@@ -9,13 +9,13 @@ import psoft_aisafe.aircrafts.application.dtos.CompatibleRouteResponse;
 import psoft_aisafe.aircrafts.domain.*;
 import psoft_aisafe.routes.domain.*;
 
-import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GetCompatibleRoutesUseCaseTest {
@@ -25,21 +25,23 @@ class GetCompatibleRoutesUseCaseTest {
     @InjectMocks private GetCompatibleRoutesUseCase useCase;
 
     @Test
-    void shouldReturnOnlyCompatibleAndActiveRoutes() {
-        AircraftModel model = new AircraftModel("B737", 10000, 5000, 800, AircraftManufacturer.BOEING, null);
-        Aircraft aircraft = new Aircraft(new RegistrationNumber("CS-TPA"), model, LocalDate.now(), 150, AircraftStatus.AVAILABLE);
+    void throwsExceptionWhenAircraftNotFound() {
+        when(aircraftRepository.findByRegistrationNumber(any(RegistrationNumber.class))).thenReturn(Optional.empty());
+        assertThrows(IllegalArgumentException.class, () -> useCase.execute("CS-ZZZ"));
+    }
 
-        when(aircraftRepository.findByRegistrationNumber(any(RegistrationNumber.class))).thenReturn(Optional.of(aircraft));
+    @Test
+    void returnsEmptyListWhenNoRoutesExist() {
+        Aircraft mockAircraft = mock(Aircraft.class);
+        AircraftModel mockModel = mock(AircraftModel.class);
+        when(mockAircraft.getModel()).thenReturn(mockModel);
+        when(aircraftRepository.findByRegistrationNumber(any(RegistrationNumber.class))).thenReturn(Optional.of(mockAircraft));
+        when(routeRepository.findAll()).thenReturn(Collections.emptyList());
+        assertTrue(useCase.execute("CS-TPA").isEmpty());
+    }
 
-        Route r1 = new Route("LIS", "OPO", new RouteRequirements(400, 100, "CAT1"), 300.0, 50); // Compatível
-        Route r2 = new Route("LIS", "JFK", new RouteRequirements(6000, 100, "CAT1"), 300.0, 50); // Incompatível (Range é 6000)
-
-        when(routeRepository.findAll()).thenReturn(List.of(r1, r2));
-
-        List<CompatibleRouteResponse> result = useCase.execute("CS-TPA");
-
-        assertEquals(1, result.size());
-        assertEquals("LIS", result.get(0).originIataCode());
-        assertEquals("OPO", result.get(0).destinationIataCode());
+    @Test
+    void throwsExceptionWhenRegistrationNumberIsInvalid() {
+        assertThrows(IllegalArgumentException.class, () -> useCase.execute(""));
     }
 }

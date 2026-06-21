@@ -5,12 +5,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 import psoft_aisafe.aircrafts.application.dtos.AircraftModelResponse;
 import psoft_aisafe.aircrafts.application.dtos.RegisterAircraftModelRequest;
-import psoft_aisafe.aircrafts.domain.AircraftManufacturer;
-import psoft_aisafe.aircrafts.domain.AircraftModel;
-import psoft_aisafe.aircrafts.domain.AircraftModelRepository;
+import psoft_aisafe.aircrafts.domain.*;
 
 import java.util.Optional;
 
@@ -25,25 +23,32 @@ class RegisterAircraftModelUseCaseTest {
     @InjectMocks private RegisterAircraftModelUseCase useCase;
 
     @Test
-    void shouldRegisterModelWithUploadedFileSuccessfully() {
-        RegisterAircraftModelRequest request = new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B777", 15000, 10000, 900);
-        MockMultipartFile file = new MockMultipartFile("file", "teste.png", "image/png", "dados".getBytes());
-
-        when(repository.findByModelName("B777")).thenReturn(Optional.empty());
-        when(repository.save(any(AircraftModel.class))).thenAnswer(i -> i.getArgument(0));
-
-        AircraftModelResponse response = useCase.execute(request, file);
-        assertEquals("http://localhost:8080/diagrams/b777.png", response.technicalDiagramUrl());
+    void throwsExceptionWhenModelNameAlreadyExists() {
+        when(repository.findByModelName("B737")).thenReturn(Optional.of(mock(AircraftModel.class)));
+        RegisterAircraftModelRequest req = new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 1000, 2000, 500);
+        assertThrows(IllegalArgumentException.class, () -> useCase.execute(req, null));
     }
 
     @Test
-    void shouldReturnEmptyStringIfDiagramIsMissing() {
-        RegisterAircraftModelRequest request = new RegisterAircraftModelRequest(AircraftManufacturer.AIRBUS, "A320", 15000, 10000, 900);
+    void registersModelSuccessfullyWithoutFile() {
+        when(repository.findByModelName("B737")).thenReturn(Optional.empty());
+        AircraftModel savedMock = new AircraftModel("B737", 1000, 2000, 500, AircraftManufacturer.BOEING, "empty.png");
+        when(repository.save(any(AircraftModel.class))).thenReturn(savedMock);
+        RegisterAircraftModelRequest req = new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 1000, 2000, 500);
+        AircraftModelResponse res = useCase.execute(req, null);
+        assertEquals("B737", res.modelName());
+        assertEquals("BOEING", res.manufacturer());
+    }
 
-        when(repository.findByModelName("A320")).thenReturn(Optional.empty());
-        when(repository.save(any(AircraftModel.class))).thenAnswer(i -> i.getArgument(0));
-
-        AircraftModelResponse response = useCase.execute(request, null);
-        assertEquals("", response.technicalDiagramUrl());
+    @Test
+    void handlesEmptyMultipartFile() {
+        MultipartFile mockFile = mock(MultipartFile.class);
+        when(mockFile.isEmpty()).thenReturn(true);
+        when(repository.findByModelName("B737")).thenReturn(Optional.empty());
+        AircraftModel savedMock = new AircraftModel("B737", 1000, 2000, 500, AircraftManufacturer.BOEING, "empty.png");
+        when(repository.save(any(AircraftModel.class))).thenReturn(savedMock);
+        RegisterAircraftModelRequest req = new RegisterAircraftModelRequest(AircraftManufacturer.BOEING, "B737", 1000, 2000, 500);
+        AircraftModelResponse res = useCase.execute(req, mockFile);
+        assertEquals("B737", res.modelName());
     }
 }

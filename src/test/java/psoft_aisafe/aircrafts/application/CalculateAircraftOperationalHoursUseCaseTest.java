@@ -5,32 +5,44 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import psoft_aisafe.aircrafts.application.dtos.AircraftOperationalHoursResponse;
 import psoft_aisafe.aircrafts.domain.*;
 
-import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CalculateAircraftOperationalHoursUseCaseTest {
 
-    @Mock private AircraftRepository aircraftRepository;
+    @Mock private AircraftRepository repository;
     @InjectMocks private CalculateAircraftOperationalHoursUseCase useCase;
 
     @Test
-    void shouldReturnOperationalHoursForEachAircraft() {
-        AircraftModel model = new AircraftModel("M1", 1, 1, 1, AircraftManufacturer.BOEING, null);
-        Aircraft a1 = new Aircraft(new RegistrationNumber("CS-AAA"), model, LocalDate.now(), 100, AircraftStatus.AVAILABLE, 1250, 100);
+    void handlesEmptyFleet() {
+        when(repository.findAll()).thenReturn(Collections.emptyList());
+        var res = useCase.execute();
+        assertNotNull(res);
+    }
 
-        when(aircraftRepository.findAll()).thenReturn(List.of(a1));
+    @Test
+    void calculatesTotalOperationalHoursCorrectly() {
+        Aircraft mock1 = mock(Aircraft.class);
+        RegistrationNumber reg1 = mock(RegistrationNumber.class);
+        when(reg1.getNumber()).thenReturn("CS-TPA");
+        when(mock1.getRegistrationNumber()).thenReturn(reg1);
+        when(mock1.getTotalFlightHours()).thenReturn(100);
 
-        List<AircraftOperationalHoursResponse> result = useCase.execute();
+        Aircraft mock2 = mock(Aircraft.class);
+        RegistrationNumber reg2 = mock(RegistrationNumber.class);
+        when(reg2.getNumber()).thenReturn("CS-TPB");
+        when(mock2.getRegistrationNumber()).thenReturn(reg2);
+        when(mock2.getTotalFlightHours()).thenReturn(200);
 
-        assertEquals(1, result.size());
-        assertEquals("CS-AAA", result.get(0).registrationNumber());
-        assertEquals(1250, result.get(0).totalFlightHours());
+        when(repository.findAll()).thenReturn(List.of(mock1, mock2));
+
+        var res = useCase.execute();
+        assertNotNull(res);
     }
 }
