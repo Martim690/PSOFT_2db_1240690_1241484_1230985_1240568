@@ -15,7 +15,7 @@ scripts:
 
       });\r
 
-      pm.test(\"Caunts and List\", function () {\r
+      pm.test(\"Counts and List\", function () {\r
 
       \    var jsonData = pm.response.json();\r
 
