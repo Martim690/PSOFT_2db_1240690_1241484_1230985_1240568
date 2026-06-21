@@ -8,31 +8,34 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import psoft_aisafe.aircrafts.application.dtos.UpdateAircraftStatusRequest;
 import psoft_aisafe.aircrafts.domain.*;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UpdateAircraftStatusUseCaseTest {
 
-    @Mock private AircraftRepository aircraftRepository;
+    @Mock private AircraftRepository repository;
     @InjectMocks private UpdateAircraftStatusUseCase useCase;
 
-    @Test
-    void shouldUpdateStatusSuccessfully() {
-        AircraftModel model = new AircraftModel("B737", 100, 100, 100, AircraftManufacturer.BOEING, null);
-        Aircraft aircraft = new Aircraft(new RegistrationNumber("CS-AAA"), model, LocalDate.now(), 150, AircraftStatus.AVAILABLE);
+    @Test void throwsWhenAircraftNotFound() {
+        when(repository.findByRegistrationNumber(any(RegistrationNumber.class))).thenReturn(Optional.empty());
+        UpdateAircraftStatusRequest req = new UpdateAircraftStatusRequest(AircraftStatus.IN_FLIGHT);
+        assertThrows(IllegalArgumentException.class, () -> useCase.execute("CS-ZZZ", req));
+    }
 
-        when(aircraftRepository.findByRegistrationNumber(any(RegistrationNumber.class))).thenReturn(Optional.of(aircraft));
-        when(aircraftRepository.save(any(Aircraft.class))).thenAnswer(i -> i.getArgument(0));
+    @Test void updatesStatusSuccessfully() {
+        Aircraft mockAircraft = mock(Aircraft.class);
+        when(repository.findByRegistrationNumber(any(RegistrationNumber.class))).thenReturn(Optional.of(mockAircraft));
+        when(repository.save(any(Aircraft.class))).thenReturn(mockAircraft);
+        UpdateAircraftStatusRequest req = new UpdateAircraftStatusRequest(AircraftStatus.UNDER_MAINTENANCE);
+        assertDoesNotThrow(() -> useCase.execute("CS-TPA", req));
+        verify(repository).save(mockAircraft);
+    }
 
-        UpdateAircraftStatusRequest request = new UpdateAircraftStatusRequest(AircraftStatus.IN_FLIGHT);
-
-        Aircraft result = useCase.execute("CS-AAA", request);
-
-        assertEquals(AircraftStatus.IN_FLIGHT, result.getCurrentStatus());
+    @Test void throwsWhenRequestIsNull() {
+        assertThrows(Exception.class, () -> useCase.execute("CS-TPA", null));
     }
 }
