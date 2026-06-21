@@ -1,0 +1,49 @@
+@startuml
+autonumber
+actor "ATCC" as ATCC
+participant "RouteController" as Ctrl
+participant "SearchAlternativeRoutesUseCase" as UC
+participant "RouteRepository" as Repo
+database "Database" as DB
+
+ATCC -> Ctrl : GET /api/routes/alternatives?origin=LIS&destination=MAD
+activate Ctrl
+
+Ctrl -> UC : execute(originCode, destinationCode)
+activate UC
+
+UC -> Repo : findByOriginIataCodeAndDestinationIataCodeAndActiveTrue(origin, destination)
+activate Repo
+Repo -> DB : SELECT * FROM routes\nWHERE origin_iata = ? AND destination_iata = ?\nAND is_active = true
+activate DB
+DB --> Repo : direct routes
+deactivate DB
+Repo --> UC : List<Route> (directRoutes)
+deactivate Repo
+
+UC -> Repo : findByOriginIataCodeAndActiveTrue(originCode)
+activate Repo
+Repo -> DB : SELECT * FROM routes\nWHERE origin_iata = ? AND is_active = true
+activate DB
+DB --> Repo : first-leg routes
+deactivate DB
+Repo --> UC : List<Route> (fromOrigin)
+deactivate Repo
+
+UC -> Repo : findByDestinationIataCodeAndActiveTrue(destinationCode)
+activate Repo
+Repo -> DB : SELECT * FROM routes\nWHERE destination_iata = ? AND is_active = true
+activate DB
+DB --> Repo : second-leg routes
+deactivate DB
+Repo --> UC : List<Route> (toDestination)
+deactivate Repo
+
+note right of UC: Groups toDestination routes by origin IATA.\nFor each first-leg route whose destination\nmatches a second-leg origin,\ncreates an AlternativeRouteChain(firstLeg, secondLeg, stopover).
+
+UC --> Ctrl : AlternativeRoutesResponse(origin, destination, directRoutes, oneStopRoutes)
+deactivate UC
+
+Ctrl --> ATCC : 200 OK (JSON Response)
+deactivate Ctrl
+@enduml

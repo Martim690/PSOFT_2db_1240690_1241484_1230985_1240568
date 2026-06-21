@@ -1,0 +1,22 @@
+@startuml
+autonumber
+actor "ATCC / Backoffice Operator" as Actor
+participant ":System" as System
+
+== Get Route Details by ID ==
+activate Actor
+Actor -> System : getRouteById(routeId)
+activate System
+note right of System: The system retrieves the route\nand its current version details.
+System --> Actor : returns route details
+deactivate System
+deactivate Actor
+
+== List Routes from/to Airport ==
+Actor -> System : listRoutesByAirport(iataCode)
+activate System
+note right of System: The system retrieves all routes\nwhere the airport is the origin or destination.
+System --> Actor : returns list of routes for the airport
+deactivate System
+deactivate Actor
+@enduml

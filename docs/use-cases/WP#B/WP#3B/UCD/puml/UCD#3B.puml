@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+
+actor "ATCC" as ATCC
+
+rectangle "AISafe - WP#3B: Scheduled Flights & Route Analytics" {
+  usecase "US212: Criar voo agendado" as US212
+  usecase "US213: Listar voos por aeronave" as US213
+  usecase "US214: Listar rotas ativas ordenadas" as US214
+  usecase "US215: Distância total da rede" as US215
+  usecase "US216: Rotas alternativas" as US216
+}
+
+ATCC -- US212
+ATCC -- US213
+ATCC -- US214
+ATCC -- US215
+ATCC -- US216
+
+@enduml

@@ -1,0 +1,31 @@
+@startuml
+autonumber
+actor "ATCC" as ATCC
+participant "ScheduledFlightController" as Ctrl
+participant "GetScheduledFlightsByAircraftUseCase" as UC
+participant "ScheduledFlightRepository" as Repo
+database "Database" as DB
+
+ATCC -> Ctrl : GET /api/scheduled-flights/aircraft/{registration}
+activate Ctrl
+
+Ctrl -> UC : execute(registration)
+activate UC
+
+UC -> Repo : findByAircraftRegistration(registration)
+activate Repo
+Repo -> DB : SELECT * FROM scheduled_flights\nWHERE aircraft_registration = ?
+activate DB
+DB --> Repo : list of scheduled flights
+deactivate DB
+Repo --> UC : List<ScheduledFlight>
+deactivate Repo
+
+note right of UC: Maps each ScheduledFlight\nto ScheduledFlightResponse DTO
+
+UC --> Ctrl : List<ScheduledFlightResponse>
+deactivate UC
+
+Ctrl --> ATCC : 200 OK (JSON Array)
+deactivate Ctrl
+@enduml

@@ -1,0 +1,31 @@
+@startuml
+autonumber
+actor "ATCC" as ATCC
+participant "RouteController" as Ctrl
+participant "GetTotalNetworkDistanceUseCase" as UC
+participant "RouteRepository" as Repo
+database "Database" as DB
+
+ATCC -> Ctrl : GET /api/routes/total-distance
+activate Ctrl
+
+Ctrl -> UC : execute()
+activate UC
+
+UC -> Repo : findByActiveTrue()
+activate Repo
+Repo -> DB : SELECT * FROM routes WHERE is_active = true
+activate DB
+DB --> Repo : list of active routes
+deactivate DB
+Repo --> UC : List<Route>
+deactivate Repo
+
+note right of UC: For each Route, extracts distance\nfrom its current RouteVersion.\nSums all distances to compute total.
+
+UC --> Ctrl : TotalNetworkDistanceResponse(totalDistanceKm, routeCount)
+deactivate UC
+
+Ctrl --> ATCC : 200 OK (JSON Response)
+deactivate Ctrl
+@enduml

@@ -1,0 +1,15 @@
+@startuml
+autonumber
+actor "ATCC" as ATCC
+participant ":System" as System
+
+activate ATCC
+ATCC -> System : getScheduledFlightsByAircraft(aircraftRegistration)
+activate System
+
+note right of System: The system retrieves all scheduled\nflights assigned to the specified aircraft.
+
+System --> ATCC : returns list of scheduled flights for the aircraft
+deactivate System
+deactivate ATCC
+@enduml

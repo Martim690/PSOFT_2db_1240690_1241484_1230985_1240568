@@ -1,0 +1,72 @@
+@startuml
+autonumber
+actor "ATCC" as ATCC
+participant "ScheduledFlightController" as Ctrl
+participant "CreateScheduledFlightUseCase" as UC
+participant "RouteRepository" as RouteRepo
+participant "AircraftGateway" as Gateway
+participant "ScheduledFlightRepository" as SFRepo
+participant "ScheduledFlight\n(Aggregate Root)" as SF
+database "Database" as DB
+
+ATCC -> Ctrl : POST /api/scheduled-flights (JSON)
+activate Ctrl
+
+Ctrl -> UC : execute(request)
+activate UC
+
+UC -> RouteRepo : findByRouteId(routeId)
+activate RouteRepo
+RouteRepo -> DB : SELECT * FROM routes WHERE route_id = ?
+activate DB
+DB --> RouteRepo : route
+deactivate DB
+RouteRepo --> UC : route
+deactivate RouteRepo
+
+UC -> UC : verify route.isActive()
+note right of UC: Throws IllegalStateException\nif route is not active
+
+UC -> Gateway : findByRegistration(aircraftRegistration)
+activate Gateway
+Gateway --> UC : AircraftInfo(maxRangeKm, underMaintenance)
+deactivate Gateway
+
+UC -> UC : verify aircraft.maxRangeKm >= route.minimumRange
+note right of UC: Throws IllegalArgumentException\nif range is insufficient
+
+UC -> UC : verify !aircraft.underMaintenance()
+note right of UC: Throws IllegalStateException\nif aircraft is under maintenance
+
+UC -> SFRepo : findByAircraftRegistrationAndScheduledDateTimeBetween(registration, windowStart, windowEnd)
+activate SFRepo
+SFRepo -> DB : SELECT * FROM scheduled_flights\nWHERE aircraft_registration = ?\nAND scheduled_date_time BETWEEN ? AND ?
+activate DB
+DB --> SFRepo : conflicts list
+deactivate DB
+SFRepo --> UC : List<ScheduledFlight>
+deactivate SFRepo
+
+UC -> UC : verify conflicts.isEmpty()
+note right of UC: Throws IllegalStateException\nif aircraft already has a flight in the window
+
+UC -> SF ** : new ScheduledFlight(routeId, aircraftRegistration, scheduledDateTime)
+activate SF
+SF --> UC : scheduledFlight
+deactivate SF
+
+UC -> SFRepo : save(scheduledFlight)
+activate SFRepo
+SFRepo -> DB : INSERT INTO scheduled_flights (...)
+activate DB
+DB --> SFRepo : saved record
+deactivate DB
+SFRepo --> UC : savedScheduledFlight
+deactivate SFRepo
+
+UC --> Ctrl : ScheduledFlightResponse
+deactivate UC
+
+Ctrl --> ATCC : 201 Created (JSON Response)
+deactivate Ctrl
+@enduml

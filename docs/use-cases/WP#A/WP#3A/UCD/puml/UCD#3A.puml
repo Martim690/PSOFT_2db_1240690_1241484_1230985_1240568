@@ -1,0 +1,30 @@
+@startuml
+left to right direction
+
+actor "ATCC" as ATCC
+actor "Backoffice Operator" as BO
+
+rectangle "AISafe - WP#3A: Flight Routes" {
+  usecase "US110: Criar rota" as US110
+  usecase "US111: Ver histórico de versões" as US111
+  usecase "US112: Atualizar rota" as US112a
+  usecase "US112: Desativar rota" as US112b
+  usecase "US113: Obter rota por ID" as US113a
+  usecase "US113: Listar rotas por aeroporto" as US113b
+  usecase "US114: Pesquisar rotas" as US114
+}
+
+ATCC -- US110
+ATCC -- US111
+ATCC -- US112a
+ATCC -- US112b
+ATCC -- US113a
+ATCC -- US113b
+ATCC -- US114
+
+BO -- US111
+BO -- US112a
+BO -- US112b
+BO -- US113a
+
+@enduml

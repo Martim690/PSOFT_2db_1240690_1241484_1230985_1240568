@@ -1,0 +1,15 @@
+@startuml
+autonumber
+actor "ATCC" as ATCC
+participant ":System" as System
+
+activate ATCC
+ATCC -> System : scheduleFlight(routeId, aircraftRegistration, scheduledDateTime)
+activate System
+
+note right of System: The system validates the route is active,\nverifies aircraft range requirements,\nchecks aircraft availability (no conflicts),\nand creates the scheduled flight.
+
+System --> ATCC : informs operation success and returns created scheduled flight
+deactivate System
+deactivate ATCC
+@enduml

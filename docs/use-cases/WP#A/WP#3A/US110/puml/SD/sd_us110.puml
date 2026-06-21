@@ -1,0 +1,45 @@
+@startuml
+autonumber
+actor "ATCC" as ATCC
+participant "RouteController" as Ctrl
+participant "CreateRouteUseCase" as UC
+participant "RouteRequirements\n(Value Object)" as Req
+participant "Route\n(Aggregate Root)" as Route
+participant "RouteRepository" as Repo
+database "Database" as DB
+
+ATCC -> Ctrl : POST /api/routes (JSON)
+activate Ctrl
+
+Ctrl -> UC : execute(request)
+activate UC
+
+note right of UC: Validates both airports exist\nvia AirportRepository
+
+UC -> Req ** : new RouteRequirements(minRange, minCapacity, certCode)
+activate Req
+note right of Req: Domain validation occurs here\n(e.g., minRange > 0, minCapacity > 0)
+Req --> UC : requirements (validated object)
+deactivate Req
+
+UC -> Route ** : new Route(origin, destination, requirements, distance, flightTime)
+activate Route
+note right of Route: Domain validation occurs here\n(e.g., origin != destination)\nGenerates RouteID (UUID)\nCreates first RouteVersion
+Route --> UC : route (validated object)
+deactivate Route
+
+UC -> Repo : save(route)
+activate Repo
+Repo -> DB : INSERT INTO routes (...)\nINSERT INTO route_versions (...)
+activate DB
+DB --> Repo : saved record
+deactivate DB
+Repo --> UC : savedRoute
+deactivate Repo
+
+UC --> Ctrl : savedRoute
+deactivate UC
+
+Ctrl --> ATCC : 201 Created (JSON Response)
+deactivate Ctrl
+@enduml

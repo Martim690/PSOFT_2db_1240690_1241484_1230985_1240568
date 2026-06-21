@@ -1,0 +1,43 @@
+@startuml
+autonumber
+actor "ATCC" as ATCC
+participant "RouteController" as Ctrl
+participant "ListActiveRoutesSortedUseCase" as UC
+participant "RouteRepository" as RouteRepo
+participant "ScheduledFlightRepository" as SFRepo
+database "Database" as DB
+
+ATCC -> Ctrl : GET /api/routes/active/sorted?sortBy=popularity
+activate Ctrl
+
+Ctrl -> UC : execute(sortBy)
+activate UC
+
+UC -> RouteRepo : findByActiveTrue()
+activate RouteRepo
+RouteRepo -> DB : SELECT * FROM routes WHERE is_active = true
+activate DB
+DB --> RouteRepo : list of active routes
+deactivate DB
+RouteRepo --> UC : List<Route>
+deactivate RouteRepo
+
+loop for each route
+  UC -> SFRepo : countByRouteId(routeId)
+  activate SFRepo
+  SFRepo -> DB : SELECT COUNT(*) FROM scheduled_flights WHERE route_id = ?
+  activate DB
+  DB --> SFRepo : usageCount
+  deactivate DB
+  SFRepo --> UC : long
+  deactivate SFRepo
+end
+
+note right of UC: Builds RouteWithStatsDTO for each route.\nSorts by usageCount DESC (popularity)\nor by distanceKm ASC (distance)
+
+UC --> Ctrl : List<RouteWithStatsDTO>
+deactivate UC
+
+Ctrl --> ATCC : 200 OK (JSON Array)
+deactivate Ctrl
+@enduml
