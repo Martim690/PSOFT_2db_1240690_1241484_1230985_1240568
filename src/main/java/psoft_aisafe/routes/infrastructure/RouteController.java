@@ -17,6 +17,9 @@ import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import psoft_aisafe.routes.application.dtos.RouteWithStatsDTO;
+import psoft_aisafe.routes.application.dtos.TotalNetworkDistanceResponse;
+import psoft_aisafe.routes.application.dtos.AlternativeRoutesResponse;
 
 @RestController
 @RequestMapping("/api/routes")
@@ -28,6 +31,9 @@ public class RouteController {
     private final GetRouteByIdUseCase getRouteByIdUseCase;
     private final ListRoutesByAirportUseCase listRoutesByAirportUseCase;
     private final SearchRoutesUseCase searchRoutesUseCase;
+    private final ListActiveRoutesSortedUseCase listActiveRoutesSortedUseCase;
+    private final GetTotalNetworkDistanceUseCase getTotalNetworkDistanceUseCase;
+    private final SearchAlternativeRoutesUseCase searchAlternativeRoutesUseCase;
 
     public RouteController(
             final CreateRouteUseCase createRouteUseCase,
@@ -35,13 +41,16 @@ public class RouteController {
             final DeactivateRouteUseCase deactivateRouteUseCase,
             final GetRouteByIdUseCase getRouteByIdUseCase,
             final ListRoutesByAirportUseCase listRoutesByAirportUseCase,
-            final SearchRoutesUseCase searchRoutesUseCase) {
+            final SearchRoutesUseCase searchRoutesUseCase, ListActiveRoutesSortedUseCase listActiveRoutesSortedUseCase, GetTotalNetworkDistanceUseCase getTotalNetworkDistanceUseCase, SearchAlternativeRoutesUseCase searchAlternativeRoutesUseCase) {
         this.createRouteUseCase = createRouteUseCase;
         this.updateRouteUseCase = updateRouteUseCase;
         this.deactivateRouteUseCase = deactivateRouteUseCase;
         this.getRouteByIdUseCase = getRouteByIdUseCase;
         this.listRoutesByAirportUseCase = listRoutesByAirportUseCase;
         this.searchRoutesUseCase = searchRoutesUseCase;
+        this.listActiveRoutesSortedUseCase = listActiveRoutesSortedUseCase;
+        this.getTotalNetworkDistanceUseCase = getTotalNetworkDistanceUseCase;
+        this.searchAlternativeRoutesUseCase = searchAlternativeRoutesUseCase;
     }
 
     /**
@@ -61,7 +70,7 @@ public class RouteController {
      * GET /api/routes/{id}
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ATCC', 'BACKOFFICE_OPERATOR')")
+    @PreAuthorize("hasAnyAuthority('ATCC', 'BACKOFFICE_OPERATOR')")
     public ResponseEntity<RouteResponse> getById(@PathVariable String id) {
         RouteResponse response = getRouteByIdUseCase.getById(id);
         addLinks(response);
@@ -73,17 +82,17 @@ public class RouteController {
      * GET /api/routes/{id}/history
      */
     @GetMapping("/{id}/history")
-    @PreAuthorize("hasAnyRole('ATCC', 'BACKOFFICE_OPERATOR')")
+    @PreAuthorize("hasAnyAuthority('ATCC', 'BACKOFFICE_OPERATOR')")
     public ResponseEntity<List<RouteVersionResponse>> getHistory(@PathVariable String id) {
         return ResponseEntity.ok(getRouteByIdUseCase.getHistory(id));
     }
 
     /**
-     * US112 - Update a route.
-     * PATCH /api/routes/{id}
+     * US112 - Update a route (full replacement).
+     * PUT /api/routes/{id}
      */
-    @PatchMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ATCC', 'BACKOFFICE_OPERATOR')")
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ATCC', 'BACKOFFICE_OPERATOR')")
     public ResponseEntity<RouteResponse> update(@PathVariable String id,
                                                 @Valid @RequestBody UpdateRouteRequest request) {
         RouteResponse response = updateRouteUseCase.update(id, request);
@@ -93,10 +102,10 @@ public class RouteController {
 
     /**
      * US112 - Deactivate a route.
-     * DELETE /api/routes/{id}/deactivate
+     * POST /api/routes/{id}/deactivate
      */
-    @DeleteMapping("/{id}/deactivate")
-    @PreAuthorize("hasAnyRole('ATCC', 'BACKOFFICE_OPERATOR')")
+    @PostMapping("/{id}/deactivate")
+    @PreAuthorize("hasAnyAuthority('ATCC', 'BACKOFFICE_OPERATOR')")
     public ResponseEntity<Void> deactivate(@PathVariable String id) {
         deactivateRouteUseCase.deactivate(id);
         return ResponseEntity.noContent().build();
@@ -126,6 +135,30 @@ public class RouteController {
         List<RouteResponse> routes = searchRoutesUseCase.search(origin, destination);
         routes.forEach(this::addLinks);
         return ResponseEntity.ok(routes);
+    }
+
+    /** US214 — Listar rotas ativas ordenadas por popularidade ou distância */
+    @GetMapping("/active/sorted")
+    @PreAuthorize("hasAuthority('ATCC')")
+    public ResponseEntity<List<RouteWithStatsDTO>> listActiveRoutesSorted(
+            @RequestParam(defaultValue = "popularity") String sortBy) {
+        return ResponseEntity.ok(listActiveRoutesSortedUseCase.execute(sortBy));
+    }
+
+    /** US215 — Distância total da rede */
+    @GetMapping("/total-distance")
+    @PreAuthorize("hasAuthority('ATCC')")
+    public ResponseEntity<TotalNetworkDistanceResponse> getTotalNetworkDistance() {
+        return ResponseEntity.ok(getTotalNetworkDistanceUseCase.execute());
+    }
+
+    /** US216 — Rotas alternativas entre dois aeroportos */
+    @GetMapping("/alternatives")
+    @PreAuthorize("hasAuthority('ATCC')")
+    public ResponseEntity<AlternativeRoutesResponse> getAlternativeRoutes(
+            @RequestParam String origin,
+            @RequestParam String destination) {
+        return ResponseEntity.ok(searchAlternativeRoutesUseCase.execute(origin, destination));
     }
 
     // HATEOAS links

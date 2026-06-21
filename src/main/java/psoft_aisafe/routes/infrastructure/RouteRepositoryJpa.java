@@ -15,6 +15,9 @@ import java.util.Optional;
 public interface RouteRepositoryJpa extends JpaRepository<Route, RouteID>, RouteRepository {
 
     @Override
+    Route save(Route route);
+
+    @Override
     Optional<Route> findByRouteId(RouteID routeId);
 
     @Override
@@ -39,6 +42,29 @@ public interface RouteRepositoryJpa extends JpaRepository<Route, RouteID>, Route
         """)
     boolean existsActiveRouteBetween(@Param("origin") String origin,
                                      @Param("destination") String destination);
+
+    @Override
+    @Query("SELECT r FROM Route r WHERE r.isActive = true")
+    List<Route> findByActiveTrue();
+
+    @Override
+    @Query("SELECT r FROM Route r WHERE r.originIataCode = :originIataCode AND r.isActive = true")
+    List<Route> findByOriginIataCodeAndActiveTrue(@Param("originIataCode") String originIataCode);
+
+    @Override
+    @Query("SELECT r FROM Route r WHERE r.destinationIataCode = :destinationIataCode AND r.isActive = true")
+    List<Route> findByDestinationIataCodeAndActiveTrue(@Param("destinationIataCode") String destinationIataCode);
+
+    @Override
+    @Query("""
+        SELECT r FROM Route r
+        WHERE r.originIataCode = :originIataCode
+          AND r.destinationIataCode = :destinationIataCode
+          AND r.isActive = true
+        """)
+    List<Route> findByOriginIataCodeAndDestinationIataCodeAndActiveTrue(
+            @Param("originIataCode") String originIataCode,
+            @Param("destinationIataCode") String destinationIataCode);
 
     default Optional<Route> findByRouteId(String routeId) {
         return findByRouteId(RouteID.of(routeId));

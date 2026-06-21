@@ -1,0 +1,498 @@
+{
+  "info": {
+    "_postman_id": "571d1d77-3d99-4c4e-a91a-a541862f0d79",
+    "name": "WP#3A-Flight Routes (US110-114)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "55164796",
+    "_collection_link": "https://go.postman.co/collection/55164796-571d1d77-3d99-4c4e-a91a-a541862f0d79?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Login (ATCC)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const body = pm.response.json();\r",
+              "pm.environment.set(\"token\", body.token);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"atcc\",\n  \"password\": \"atcc123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "US110 - Criar rota",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 201 Created\", () => {\r",
+              "    pm.response.to.have.status(201);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Has routeId\", () => {\r",
+              "    const body = pm.response.json();\r",
+              "    pm.expect(body.routeId).to.be.a('string');\r",
+              "    pm.environment.set(\"routeId\", body.routeId);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Route is active\", () => {\r",
+              "    const body = pm.response.json();\r",
+              "    pm.expect(body.active).to.be.true;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Has HATEOAS links\", () => {\r",
+              "    const body = pm.response.json();\r",
+              "    pm.expect(body._links).to.have.property('self');\r",
+              "    pm.expect(body._links).to.have.property('history');\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"originIataCode\": \"LIS\",\r\n  \"destinationIataCode\": \"OPO\",\r\n  \"estimatedFlightTime\": 55,\r\n  \"distance\": 310.0,\r\n  \"minimumRange\": 500,\r\n  \"minimumCapacity\": 50\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/routes",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "routes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "US111 - Histórico de versões da rota",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200 OK\", () => {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Returns array\", () => {\r",
+              "    const body = pm.response.json();\r",
+              "    pm.expect(body).to.be.an('array');\r",
+              "    pm.expect(body.length).to.be.greaterThan(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"First version is current\", () => {\r",
+              "    const body = pm.response.json();\r",
+              "    pm.expect(body[0].current).to.be.true;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/routes/",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "routes",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "US112 - Atualizar rota (PUT)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200 OK\", () => {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Distance was updated\", () => {\r",
+              "    const body = pm.response.json();\r",
+              "    pm.expect(body.currentDistance).to.eql(320.0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Flight time was updated\", () => {\r",
+              "    const body = pm.response.json();\r",
+              "    pm.expect(body.currentEstimatedFlightTime).to.eql(60);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Route still active\", () => {\r",
+              "    const body = pm.response.json();\r",
+              "    pm.expect(body.active).to.be.true;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"estimatedFlightTime\": 55,\r\n    \"distance\": 320.0,\r\n    \"minimumRange\": 400,\r\n    \"minimumCapacity\": 50,\r\n    \"requiredCertificationCode\": \"CAT1\",\r\n    \"changeReason\": \"Ajuste de horário de voo\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/routes/{{routeId}}",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "routes",
+            "{{routeId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "US114 - Pesquisar rotas por origem",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200 OK\", () => {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Returns array\", () => {\r",
+              "    const body = pm.response.json();\r",
+              "    pm.expect(body).to.be.an('array');\r",
+              "    pm.expect(body.length).to.be.greaterThan(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Route has correct origin\", () => {\r",
+              "    const body = pm.response.json();\r",
+              "    pm.expect(body[0].originIataCode).to.eql(\"LIS\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/routes?origin=",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "routes"
+          ],
+          "query": [
+            {
+              "key": "origin",
+              "value": ""
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "US112 - Desativar rota (POST)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 204 No Content\", () => {\r",
+              "    pm.response.to.have.status(204);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/routes/{{routeId}}/deactivate",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "routes",
+            "{{routeId}}",
+            "deactivate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "US113 - Obter rota por ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200 OK\", () => {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Has routeId\", () => {\r",
+              "    const body = pm.response.json();\r",
+              "    pm.expect(body.routeId).to.be.a('string');\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Has origin and destination\", () => {\r",
+              "    const body = pm.response.json();\r",
+              "    pm.expect(body.originIataCode).to.eql(\"LIS\");\r",
+              "    pm.expect(body.destinationIataCode).to.eql(\"OPO\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Has links\", () => {\r",
+              "    const body = pm.response.json();\r",
+              "    const links = body._links || body.links;\r",
+              "    pm.expect(links).to.exist;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/routes/{{routeId}}",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "routes",
+            "{{routeId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "US113 - Listar rotas por aeroporto",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200 OK\", () => {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Returns array\", () => {\r",
+              "    const body = pm.response.json();\r",
+              "    pm.expect(body).to.be.an('array');\r",
+              "    pm.expect(body.length).to.be.greaterThan(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Routes contain airport\", () => {\r",
+              "    const body = pm.response.json();\r",
+              "    const hasAirport = body.some(r => r.originIataCode === \"LIS\" || r.destinationIataCode === \"LIS\");\r",
+              "    pm.expect(hasAirport).to.be.true;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/routes/airport/LIS",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "routes",
+            "airport",
+            "LIS"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

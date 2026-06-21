@@ -1,0 +1,692 @@
+{
+  "info": {
+    "_postman_id": "651f531e-e161-428b-82f7-f27df34a2e65",
+    "name": "AISafe - WP#3B Scheduled Flights & Route Analytics (US212-US216)",
+    "description": "Pedidos e testes automatizados para US212 (criar voo agendado), US213 (voos agendados por aeronave), US214 (rotas ativas ordenadas), US215 (distância total da rede) e US216 (rotas alternativas).\n\nComo correr:\n1. Seleciona o mesmo environment que usas na coleção WP#3A e corre lá o pedido de login - isso preenche a variável `token` partilhada.\n2. Dentro da pasta US212, corre 'Sucesso - cria voo agendado' antes de 'Erro - conflito de agendamento' (este último reutiliza a mesma aeronave/hora de propósito).\n3. As restantes pastas (US213-US216) podem correr de forma independente.\n\nPré-requisitos no environment:\n- baseUrl (ex: http://localhost:8080)\n- token: JWT com authority ATCC (preenchido pelo login da WP#3A)\n- routeId: ID (UUID) de uma rota ATIVA já existente\n- aircraftRegistration: matrícula de uma aeronave existente, NÃO em manutenção, com alcance suficiente para a rota indicada\n- originIata / destinationIata: dois aeroportos com pelo menos uma rota direta e, idealmente, uma ligação com escala (para testar US216 por completo)\n\nOs testes de erro (404/400/409) assumem um @ControllerAdvice que mapeia:\n- EntityNotFoundException -> 404\n- IllegalArgumentException -> 400\n- IllegalStateException -> 409\nAjusta os códigos esperados se o teu handler mapear de forma diferente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "55164796",
+    "_collection_link": "https://go.postman.co/collection/55164796-651f531e-e161-428b-82f7-f27df34a2e65?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "US212 - Criar voo agendado",
+      "item": [
+        {
+          "name": "Sucesso - cria voo agendado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test(\"Resposta tem id\", function () {",
+                  "    pm.expect(body.id).to.exist;",
+                  "});",
+                  "",
+                  "pm.test(\"routeId corresponde ao pedido\", function () {",
+                  "    pm.expect(body.routeId).to.eql(pm.environment.get(\"routeId\"));",
+                  "});",
+                  "",
+                  "pm.test(\"aircraftRegistration corresponde ao pedido\", function () {",
+                  "    pm.expect(body.aircraftRegistration).to.eql(pm.environment.get(\"aircraftRegistration\"));",
+                  "});",
+                  "",
+                  "pm.test(\"status inicial é SCHEDULED\", function () {",
+                  "    pm.expect(body.status).to.eql(\"SCHEDULED\");",
+                  "});",
+                  "",
+                  "pm.test(\"scheduledDateTime está presente\", function () {",
+                  "    pm.expect(body.scheduledDateTime).to.exist;",
+                  "});",
+                  "",
+                  "// guarda o id e a data/hora para usar nos testes seguintes (US213 e conflito)",
+                  "pm.environment.set(\"scheduledFlightId\", body.id);",
+                  "pm.environment.set(\"scheduledDateTimeUsed\", body.scheduledDateTime);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"routeId\": \"{{routeId}}\",\n  \"aircraftRegistration\": \"{{aircraftRegistration}}\",\n  \"scheduledDateTime\": \"2026-07-15T10:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/scheduled-flights",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "scheduled-flights"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Erro - rota não encontrada (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Mensagem de erro é informativa\", function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(JSON.stringify(body)).to.match(/[Nn]ão encontrada|not found/);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"routeId\": \"rota-inexistente-0000\",\n  \"aircraftRegistration\": \"{{aircraftRegistration}}\",\n  \"scheduledDateTime\": \"2026-07-15T12:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/scheduled-flights",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "scheduled-flights"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Erro - aeronave não encontrada (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"routeId\": \"{{routeId}}\",\n  \"aircraftRegistration\": \"ZZZZZZ\",\n  \"scheduledDateTime\": \"2026-07-15T14:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/scheduled-flights",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "scheduled-flights"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Erro - conflito de agendamento (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "pm.test(\"Mensagem refere conflito de agendamento\", function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(JSON.stringify(body)).to.match(/agendado|conflict/i);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"routeId\": \"{{routeId}}\",\n  \"aircraftRegistration\": \"{{aircraftRegistration}}\",\n  \"scheduledDateTime\": \"{{scheduledDateTimeUsed}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/scheduled-flights",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "scheduled-flights"
+              ]
+            },
+            "description": "Reutiliza a mesma aeronave e o mesmo instante do pedido 'Sucesso' acima, para forçar sobreposição de horário. Corre depois do pedido 'Sucesso'."
+          },
+          "response": []
+        },
+        {
+          "name": "Erro - validação de input (400, campos em falta)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"routeId\": \"\",\n  \"aircraftRegistration\": \"\",\n  \"scheduledDateTime\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/scheduled-flights",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "scheduled-flights"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "US213 - Voos agendados por aeronave",
+      "item": [
+        {
+          "name": "Sucesso - lista voos da aeronave",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test(\"Resposta é um array\", function () {",
+                  "    pm.expect(body).to.be.an(\"array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Contém o voo criado em US212\", function () {",
+                  "    const ids = body.map(f => f.id);",
+                  "    pm.expect(ids).to.include(parseInt(pm.environment.get(\"scheduledFlightId\")));",
+                  "});",
+                  "",
+                  "pm.test(\"Todos os voos pertencem à aeronave pedida\", function () {",
+                  "    body.forEach(f => {",
+                  "        pm.expect(f.aircraftRegistration).to.eql(pm.environment.get(\"aircraftRegistration\"));",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/scheduled-flights/aircraft/{{aircraftRegistration}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "scheduled-flights",
+                "aircraft",
+                "{{aircraftRegistration}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Caso limite - aeronave sem voos agendados",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Resposta é um array vazio\", function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.be.an(\"array\").that.is.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/scheduled-flights/aircraft/SEM-VOOS-001",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "scheduled-flights",
+                "aircraft",
+                "SEM-VOOS-001"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "US214 - Rotas ativas ordenadas",
+      "item": [
+        {
+          "name": "Ordenado por popularidade",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test(\"Resposta é um array\", function () {",
+                  "    pm.expect(body).to.be.an(\"array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Todas as rotas estão ativas\", function () {",
+                  "    body.forEach(r => pm.expect(r.active).to.be.true);",
+                  "});",
+                  "",
+                  "pm.test(\"Ordenado de forma decrescente por usageCount\", function () {",
+                  "    for (let i = 1; i < body.length; i++) {",
+                  "        pm.expect(body[i - 1].usageCount).to.be.at.least(body[i].usageCount);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"Cada rota tem routeId, distanceKm e usageCount\", function () {",
+                  "    body.forEach(r => {",
+                  "        pm.expect(r.routeId).to.exist;",
+                  "        pm.expect(r.distanceKm).to.be.a(\"number\");",
+                  "        pm.expect(r.usageCount).to.be.a(\"number\");",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/routes/active/sorted?sortBy=popularity",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routes",
+                "active",
+                "sorted"
+              ],
+              "query": [
+                {
+                  "key": "sortBy",
+                  "value": "popularity"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ordenado por distância",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test(\"Ordenado de forma crescente por distanceKm\", function () {",
+                  "    for (let i = 1; i < body.length; i++) {",
+                  "        pm.expect(body[i - 1].distanceKm).to.be.at.most(body[i].distanceKm);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/routes/active/sorted?sortBy=distance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routes",
+                "active",
+                "sorted"
+              ],
+              "query": [
+                {
+                  "key": "sortBy",
+                  "value": "distance"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sem parâmetro sortBy - usa popularidade por defeito",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test(\"Ordenado por usageCount (default)\", function () {",
+                  "    for (let i = 1; i < body.length; i++) {",
+                  "        pm.expect(body[i - 1].usageCount).to.be.at.least(body[i].usageCount);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/routes/active/sorted",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routes",
+                "active",
+                "sorted"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "US215 - Distância total da rede",
+      "item": [
+        {
+          "name": "Sucesso - calcula distância total",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test(\"totalDistanceKm é um número >= 0\", function () {",
+                  "    pm.expect(body.totalDistanceKm).to.be.a(\"number\");",
+                  "    pm.expect(body.totalDistanceKm).to.be.at.least(0);",
+                  "});",
+                  "",
+                  "pm.test(\"activeRouteCount é um inteiro >= 0\", function () {",
+                  "    pm.expect(body.activeRouteCount).to.be.a(\"number\");",
+                  "    pm.expect(body.activeRouteCount).to.be.at.least(0);",
+                  "});",
+                  "",
+                  "pm.test(\"Se não há rotas ativas, distância total é 0\", function () {",
+                  "    if (body.activeRouteCount === 0) {",
+                  "        pm.expect(body.totalDistanceKm).to.eql(0);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/routes/total-distance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routes",
+                "total-distance"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "US216 - Rotas alternativas",
+      "item": [
+        {
+          "name": "Sucesso - rotas diretas e com escala",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test(\"originAirport e destinationAirport correspondem ao pedido\", function () {",
+                  "    pm.expect(body.originAirport).to.eql(pm.environment.get(\"originIata\"));",
+                  "    pm.expect(body.destinationAirport).to.eql(pm.environment.get(\"destinationIata\"));",
+                  "});",
+                  "",
+                  "pm.test(\"directRoutes e oneStopRoutes existem como arrays\", function () {",
+                  "    pm.expect(body.directRoutes).to.be.an(\"array\");",
+                  "    pm.expect(body.oneStopRoutes).to.be.an(\"array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Rotas diretas, se existirem, ligam origin a destination\", function () {",
+                  "    body.directRoutes.forEach(r => {",
+                  "        pm.expect(r.originIataCode).to.eql(pm.environment.get(\"originIata\"));",
+                  "        pm.expect(r.destinationIataCode).to.eql(pm.environment.get(\"destinationIata\"));",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test(\"Cadeias com escala estão coerentes (aeroporto de ligação correto)\", function () {",
+                  "    body.oneStopRoutes.forEach(chain => {",
+                  "        pm.expect(chain.firstLeg.destinationIataCode).to.eql(chain.connectionAirport);",
+                  "        pm.expect(chain.secondLeg.originIataCode).to.eql(chain.connectionAirport);",
+                  "        pm.expect(chain.firstLeg.originIataCode).to.eql(pm.environment.get(\"originIata\"));",
+                  "        pm.expect(chain.secondLeg.destinationIataCode).to.eql(pm.environment.get(\"destinationIata\"));",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/routes/alternatives?origin={{originIata}}&destination={{destinationIata}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routes",
+                "alternatives"
+              ],
+              "query": [
+                {
+                  "key": "origin",
+                  "value": "{{originIata}}"
+                },
+                {
+                  "key": "destination",
+                  "value": "{{destinationIata}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Caso limite - sem rotas entre os aeroportos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test(\"Ambos os arrays vêm vazios quando não há ligação\", function () {",
+                  "    pm.expect(body.directRoutes).to.be.an(\"array\").that.is.empty;",
+                  "    pm.expect(body.oneStopRoutes).to.be.an(\"array\").that.is.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/routes/alternatives?origin=ZZZ&destination=YYY",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routes",
+                "alternatives"
+              ],
+              "query": [
+                {
+                  "key": "origin",
+                  "value": "ZZZ"
+                },
+                {
+                  "key": "destination",
+                  "value": "YYY"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  }
+}

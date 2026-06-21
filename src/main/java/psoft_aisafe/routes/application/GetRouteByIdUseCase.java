@@ -1,5 +1,6 @@
 package psoft_aisafe.routes.application;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import psoft_aisafe.routes.application.dtos.RouteResponse;
@@ -26,7 +27,7 @@ public class GetRouteByIdUseCase {
     public RouteResponse getById(final String routeId) {
         return routeRepository.findByRouteId(RouteID.of(routeId))
                 .map(RouteResponse::from)
-                .orElseThrow(() -> new IllegalArgumentException("Route not found: " + routeId));
+                .orElseThrow(() -> new EntityNotFoundException("Route not found: " + routeId));
     }
 
     /**
@@ -38,6 +39,6 @@ public class GetRouteByIdUseCase {
                 .map(route -> route.getVersions().stream()
                         .map(RouteVersionResponse::from)
                         .collect(Collectors.toList()))
-                .orElseThrow(() -> new IllegalArgumentException("Route not found: " + routeId));
+                .orElseThrow(() -> new EntityNotFoundException("Route not found: " + routeId));
     }
 }
